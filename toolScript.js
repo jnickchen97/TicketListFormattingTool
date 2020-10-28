@@ -12,7 +12,7 @@ function toggleNav() {
 }
 
 function openNav() {
-	document.getElementById("myNav").style.width = "50%";
+	document.getElementById("myNav").style.width = "1280px";
 	setTimeout(function(){ document.getElementById("menuInfo").style.visibility="visible"; }, 450);
 }
 
@@ -97,6 +97,7 @@ function JenkinsFormat() {
 		
 function NewFormat() {
 	document.getElementById("fileInput").style.visibility="visible";
+	document.getElementById("fileInputLabel").style.visibility="visible";
 	document.getElementById("optionButtons1").style.visibility="hidden";
 	document.getElementById("optionLabel").innerHTML = "Format New Tickets on List";
 	document.getElementById("refresh").style.visibility="visible";
@@ -117,6 +118,7 @@ function NewFormat() {
 				document.getElementById("outputText").innerHTML = linesArr.join('<br/>');
 			}
 			document.getElementById("fileInput").style.visibility="hidden";
+			document.getElementById("fileInputLabel").style.visibility="hidden";
 		}; 
 		reader.onerror = (e) => alert(e.target.error.name); 
 		reader.readAsText(file); 
@@ -231,6 +233,7 @@ function formatCleanup(lines) {
 
 function Merge() {
 	document.getElementById("fileInput").style.visibility="visible";
+	document.getElementById("fileInputLabel").style.visibility="visible";
 	document.getElementById("optionButtons1").style.visibility="hidden";
 	document.getElementById("optionLabel").innerHTML = "Format List for Merge Request";
 	document.getElementById("refresh").style.visibility="visible";
@@ -278,6 +281,7 @@ function Merge() {
 				document.getElementById("outputText").innerHTML = linesArr.join('<br/>');
 			}
 			document.getElementById("fileInput").style.visibility="hidden";
+			document.getElementById("fileInputLabel").style.visibility="hidden";
 		}; 
 		reader.onerror = (e) => alert(e.target.error.name); 
 		reader.readAsText(file); 
@@ -286,6 +290,7 @@ function Merge() {
 
 function ChangeTask() {
 	document.getElementById("fileInput").style.visibility="visible";
+	document.getElementById("fileInputLabel").style.visibility="visible";
 	document.getElementById("optionButtons1").style.visibility="hidden";
 	document.getElementById("optionLabel").innerHTML = "Format List for Change Task";
 	document.getElementById("refresh").style.visibility="visible";
@@ -341,6 +346,7 @@ function ChangeTask() {
 				document.getElementById("outputText").innerHTML = linesArr.join('<br/>');
 			}
 			document.getElementById("fileInput").style.visibility="hidden";
+			document.getElementById("fileInputLabel").style.visibility="hidden";
 		}; 
 		reader.onerror = (e) => alert(e.target.error.name); 
 		reader.readAsText(file); 
@@ -349,6 +355,7 @@ function ChangeTask() {
 
 function Email() {
 	document.getElementById("fileInput").style.visibility="visible";
+	document.getElementById("fileInputLabel").style.visibility="visible";
 	document.getElementById("optionButtons1").style.visibility="hidden";
 	document.getElementById("optionLabel").innerHTML = "Format Existing List for Email";
 	document.getElementById("refresh").style.visibility="visible";
@@ -407,6 +414,7 @@ function Email() {
 			document.getElementById("outputText").innerHTML = linesArr.join('<br/>');
 			document.getElementById("emailButton").style.visibility="visible";
 			document.getElementById("fileInput").style.visibility="hidden";
+			document.getElementById("fileInputLabel").style.visibility="hidden";
 		}; 
 		reader.onerror = (e) => alert(e.target.error.name); 
 		reader.readAsText(file); 
@@ -433,4 +441,17 @@ function getThursday() {
 
 function displayPushDate() {
 	document.getElementById("dateLabel").innerHTML = "This week's PROD deploy will be on " + getThursday();
+}
+
+function sendFeedback() {
+	if (confirm("Click OK below to open a new email.\n\nFeel free to share any feedback such as discovered bugs or suggestions for improvements.")) {
+		var to = "jesse.nickchen@yrcw.com";
+		var subject = "Ticket List Formatting Tool Feedback";
+		window.location.href = "mailto:" + to + "?subject=" + subject;
+	} else {
+		document.getElementById("optionButtons1").style.visibility="hidden";
+		document.getElementById("optionLabel").innerHTML = "Send Feedback";
+		document.getElementById("refresh").style.visibility="visible";
+		document.getElementById("outputText").innerHTML = "You clicked cancel!";
+	}
 }

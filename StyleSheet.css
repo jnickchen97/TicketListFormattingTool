@@ -1,6 +1,6 @@
 .overlay {
-	margin-top: 35px;
-	height: 95%;
+	margin-top: -4px;
+	height: 97%;
   	width: 0;
   	position: fixed;
   	z-index: 1;
@@ -61,6 +61,11 @@ button {
 	cursor: pointer;
 }
 
+button:hover {
+	color: blue;
+	background-color: orange;
+}
+
 label {
 	font-size: 16px;
 	font-family: Calibri;
@@ -70,20 +75,41 @@ h3 {
 	font-family: Calibri;
 	font-size: 25px;
 	color: blue;
+	margin-top: 55px;
 }
 
 input {
 	margin-top: 30px;
 	font-family: Calibri;
 	font-size: 14px;
+	cursor: pointer;
+	visibility: hidden;
 }
 
-span {
-	font-size: 20px;
-	cursor: pointer;
+#fileInput {
+	width: 0.1px;
+	height: 0.1px;
+	opacity: 0;
+	overflow: hidden;
+	position: absolute;
+	z-index: -1;
+}
+
+#fileInputLabel {
+	visibility: hidden;
 	font-family: Calibri;
-	float: left;
-	padding-left: 20px;
+	font-size: 16px;
+	text-decoration: none;
+	cursor: pointer;
+	background-color: #EEEEEE;
+	padding: 2px 6px 2px 6px;
+	border: 1px solid black;
+
+}
+
+#fileInputLabel:hover {
+	background-color: orange;
+	color: blue;
 }
 
 textarea {
@@ -99,4 +125,60 @@ textarea {
 
 .width20 {
 	width: 20%;
+}
+
+ul {
+	list-style-type: none;
+	margin: 0;
+	padding: 0;
+	overflow: hidden;
+	background-color: black;
+	width: 100%;
+	position: fixed;
+	left: 0;
+	top: 0;
+}
+
+li {
+	float: left;
+	cursor: pointer;
+}
+
+li a {
+	display: block;
+	text-align: center;
+	padding: 14px 16px;
+	text-decoration: none;
+	font-style: normal;
+	color: white;
+	font-size: 17px;
+	font-family: Calibri;
+}
+
+li label {
+	display: block;
+	text-align: center;
+	padding: 14px 16px;
+	text-decoration: none;
+	font-style: normal;
+	color: white;
+	font-size: 16px;
+	font-family: Calibri;
+}
+
+li span {
+	display: block;
+	text-align: center;
+	padding: 12px 16px;
+	text-decoration: none;
+	font-style: normal;
+	color: white;
+	font-size: 17px;
+	font-family: Calibri;
+	cursor: pointer;
+}
+
+li a:hover, li span:hover {
+	background-color: orange;
+	color: blue;
 }
