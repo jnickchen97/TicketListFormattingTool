@@ -1,7 +1,46 @@
-let input = document.querySelector('input')
-let textarea = document.querySelector('textarea')
-var mergeUrl;
-var changeUrl;
+var input = document.getElementById("fileInput");
+var user;
+var pwd;
+
+function resetScreen() {
+	removeListeners();
+	input = document.getElementById("fileInput");
+	input.value = '';
+	var mergeUrl;
+	var changeUrl;
+	document.getElementById("welcomeLabel").style.display="none";
+	hideClass("JenkinsAll");
+	document.getElementById("JenkinsButton").style.display="none";
+	document.getElementById("JenkinsLink").style.display="none";
+	document.getElementById("fileInput").style.display="none";
+	document.getElementById("fileInputLabel").style.display="none";
+	document.getElementById("loaderLabel").style.display="none";
+	document.getElementById("loader").style.display="none";
+	document.getElementById("loginBtn").style.display="none";
+	document.getElementById("goToMergeRequest").style.display="none";
+	document.getElementById("newMergeRequest").style.display="none";
+	document.getElementById("goToChangeRequest").style.display="none";
+	document.getElementById("newChangeRequest").style.display="none";
+	document.getElementById("emailButton").style.display="none";
+	document.getElementById("outputText").innerHTML = "";
+	hideClass("loginInput");
+	document.getElementById("outputText").style.textAlign = "left";
+	hideClass("newList");
+	document.getElementById("newListBtn").style.display="none";
+	document.getElementById("oldBuildBtn").style.display="none";
+	document.getElementById("newBuildBtn").style.display="none";
+	document.getElementById("chgReqBtn").style.display="none";
+	document.getElementById("oldBuild").value = "";
+	document.getElementById("newBuild").value = "";
+	document.getElementById("chgReq").value = "";
+	document.getElementById("chgReqUrl").value = "";
+	user = "";
+	pwd = "";
+}
+
+function hideOptions() {
+	document.getElementById("options").style.display="none";
+}
 
 function toggleNav() {
 	if (document.getElementById("myNav").offsetWidth > 0) {
@@ -37,14 +76,61 @@ function newChangeRequest() {
 	navigate("https://yrcw.service-now.com/nav_to.do?uri=%2Fchange_request_list.do%3Fsysparm_query%3DstateNOT%2520IN9%252C10%255Eassigned_to.nameSTARTSWITHmoore%26sysparm_first_row%3D1%26sysparm_view%3D%26sysparm_choice_query_raw%3D%26sysparm_list_header_search%3Dtrue", true);
 }
 
+function NewList() {
+	resetScreen();
+	document.getElementById("optionLabel").innerHTML = "Create New Ticket List<br><br><br><br>Fill out the information below, and click submit.";
+	document.getElementById("oldBuildLabel").style.display="inline-block";
+	document.getElementById("oldBuild").style.display="inline-block";
+	document.getElementById("oldBuildBtn").style.display="inline-block";
+	document.getElementById("newBuildLabel").style.display="inline-block";
+	document.getElementById("newBuild").style.display="inline-block";
+	document.getElementById("newBuildBtn").style.display="inline-block";
+	document.getElementById("chgReqLabel").style.display="inline-block";
+	document.getElementById("chgReq").style.display="inline-block";
+	document.getElementById("chgReqBtn").style.display="inline-block";
+	document.getElementById("chgReqUrlLabel").style.display="inline-block";
+	document.getElementById("chgReqUrl").style.display="inline-block";
+	document.getElementById("newListBtn").style.display="block";
+}
+
+function findOldBuild() {
+	navigate("http://gitlab.yrcw.com/mcc/environment/mcc-environment-prod/blob/master/prod-images.properties", true);
+}
+
+function findNewBuild() {
+	navigate("https://jenkins-mcc.yrcw.com/job/app/job/mcc-modules/changes", true);
+}
+
+function submitNewList() {
+	hideClass("newList");
+	var oldBuild = document.getElementById("oldBuild").value;
+	var newBuild = document.getElementById("newBuild").value;
+	var chgReq = document.getElementById("chgReq").value;
+	var chgReqUrl = document.getElementById("chgReqUrl").value;
+	var newListBuilder = "* [Previous Release File Compare] (http://gitlab.yrcw.com/mcc/app/mcc-modules/compare/" + oldBuild + "..." + newBuild + " )\n" +
+		"* [" + chgReq + "] (" + chgReqUrl + " )\n" + "* [Merge Request] ([MERGE REQUEST URL HERE] ) (see merge request for additional DevB fixes, they are not included in this email)\n\n" +
+		"**Production**\n\n**DevB**\n\n\n\n";
+	var blob = new Blob([newListBuilder], {
+		type: "text/plain;charset=utf-8"
+	});
+	var deployDate = getThursday().replace("/", "");
+	deployDate = deployDate.replace("/", "");
+	deployDate = "prod_deploy_" + deployDate + ".txt";
+	saveAs(blob, deployDate);
+	document.getElementById("optionLabel").innerHTML = "The new ticket list has been saved to your downloads folder as " + deployDate + ".";
+}
+
 function Jenkins() {
-	document.getElementById("refresh").style.visibility="visible";
-	document.getElementById("optionButtons1").style.visibility="hidden";
+	resetScreen();
 	document.getElementById("optionLabel").innerHTML = "Get New DevB Tickets from Jenkins";
-	document.getElementById("JenkinsLabel").style.visibility="visible";
-	document.getElementById("JenkinsText").style.visibility="visible";
-	document.getElementById("JenkinsButton").style.visibility="visible";
-	document.getElementById("JenkinsLink").style.visibility="visible";
+	showClass("JenkinsAll");
+	document.getElementById("JenkinsButton").style.display="inline-block";
+	document.getElementById("JenkinsLink").style.display="inline-block";
+	document.getElementById("JenkinsText").focus();
+}
+
+function toJenkinsChanges() {
+	navigate('https://jenkins-mcc.yrcw.com/job/app/job/mcc-modules/changes', true);
 	document.getElementById("JenkinsText").focus();
 }
 
@@ -58,10 +144,9 @@ function navigate(href, newTab) {
 }
 
 function JenkinsFormat() {
-	document.getElementById("JenkinsLabel").style.visibility="hidden";
-	document.getElementById("JenkinsText").style.visibility="hidden";
-	document.getElementById("JenkinsButton").style.visibility="hidden";
-	document.getElementById("JenkinsLink").style.visibility="hidden";
+	hideClass("JenkinsAll");
+	document.getElementById("JenkinsButton").style.display="none";
+	document.getElementById("JenkinsLink").style.display="none";
 	
 	var linesArr = new Array();
 	var ticketNumbers = new Array();
@@ -96,13 +181,13 @@ function JenkinsFormat() {
 }
 		
 function NewFormat() {
-	document.getElementById("fileInput").style.visibility="visible";
-	document.getElementById("fileInputLabel").style.visibility="visible";
-	document.getElementById("optionButtons1").style.visibility="hidden";
+	resetScreen();
+	document.getElementById("fileInput").style.display="inline";
+	document.getElementById("fileInputLabel").style.display="inline";
 	document.getElementById("optionLabel").innerHTML = "Format New Tickets on List";
-	document.getElementById("refresh").style.visibility="visible";
 	
-	input.addEventListener('change', () => {
+	input.addEventListener('change', processFile);
+	function processFile() {
 		let files = input.files; 
 		if (files.length == 0) return; 
 		var file = files[0]; 
@@ -117,12 +202,13 @@ function NewFormat() {
 			} else {
 				document.getElementById("outputText").innerHTML = linesArr.join('<br/>');
 			}
-			document.getElementById("fileInput").style.visibility="hidden";
-			document.getElementById("fileInputLabel").style.visibility="hidden";
+			document.getElementById("fileInput").style.display="none";
+			document.getElementById("fileInputLabel").style.display="none";
+			removeListeners();
 		}; 
 		reader.onerror = (e) => alert(e.target.error.name); 
 		reader.readAsText(file); 
-	});
+	}
 }
 
 function formatCleanup(lines) {
@@ -231,14 +317,322 @@ function formatCleanup(lines) {
 	return linesArr;
 }
 
-function Merge() {
-	document.getElementById("fileInput").style.visibility="visible";
-	document.getElementById("fileInputLabel").style.visibility="visible";
-	document.getElementById("optionButtons1").style.visibility="hidden";
-	document.getElementById("optionLabel").innerHTML = "Format List for Merge Request";
-	document.getElementById("refresh").style.visibility="visible";
+var JiraTicketResponse;
+function MarkBlockers() {
+	resetScreen();
+	document.getElementById("optionLabel").innerHTML = "Mark All Prod Blockers";
+	displayLogin();
 	
-	input.addEventListener('change', () => {
+	input.addEventListener('change', processFile);
+	function processFile() {
+		let files = input.files; 
+		if (files.length == 0) return; 
+		var file = files[0]; 
+		let reader = new FileReader();
+  
+		reader.onload = async (e) => {
+			var file = e.target.result; 
+			var lines = file.split(/\r\n|\n/);
+			var linesArr = new Array();
+			var prodTickets = false;
+			var devbTickets = false;
+			var foundProd = false;
+			for (var i = 0; i < lines.length; i++) {
+				var tempLine = lines[i];
+				if (tempLine.startsWith("**Production**")) {
+					prodTickets = true;
+				} else if (tempLine.startsWith("**DevB**")) {
+					prodTickets = false;
+					devbTickets = true;
+				}
+				if (prodTickets) {
+					if (!tempLine.startsWith("**Production**") && tempLine.indexOf("*") > -1) {
+						foundProd = true;
+					}
+					if (tempLine.startsWith("X")) {
+						tempLine = tempLine.substring(2, tempLine.length);
+					}
+					var ticketUrlLoc = tempLine.indexOf("https://yrcfreight.atlassian.net/browse");
+					var rightParen = tempLine.indexOf(")");
+					if (ticketUrlLoc > -1) {
+						var JiraUrl = tempLine.substring(ticketUrlLoc, rightParen-1);
+						await getTicketStatus(JiraUrl);
+						var ticketResponse = JiraTicketResponse;
+						document.getElementById("loaderLabel").style.display="none";
+						document.getElementById("loader").style.display="none";
+						if (ticketResponse !== "error") {
+							var changeLoc = ticketResponse.indexOf("Change status");
+							var ticketStatus = ticketResponse.substring(changeLoc - 100, changeLoc);
+							var buttonLoc = ticketStatus.indexOf("button aria-label");
+							ticketStatus = ticketStatus.substring(buttonLoc + 19, ticketStatus.length - 3);
+							if (ticketStatus.toUpperCase() !== "DONE" && ticketStatus.toUpperCase() !== "MIGRATED TO PROD") {
+								tempLine = "X " + tempLine;
+							}
+							linesArr.push(tempLine);
+						} else {
+							alert("\nError - something went wrong.");
+							break;
+						}
+					} else {
+						linesArr.push(tempLine);
+					}
+				}
+			}
+			if (ticketResponse === "error") {
+				document.getElementById("optionLabel").innerHTML = "Error";
+				document.getElementById("outputText").style.textAlign = "center";
+				document.getElementById("outputText").innerHTML = "Please make sure you are entering the correct email address and API token for your Jira account.<br><br>" +
+																	"If this issue persists, send feedback to report a bug with this functionality.";
+			} else {
+				if (foundProd) {
+					document.getElementById("optionLabel").innerHTML = "Production tickets that have a status other than Done have been marked with an \"X\"";
+					document.getElementById("outputText").innerHTML = linesArr.join('<br/>');
+				} else {
+					document.getElementById("optionLabel").innerHTML = "There are no production tickets on this list.";
+				}
+			}
+			document.getElementById("fileInput").style.display="none";
+			document.getElementById("fileInputLabel").style.display="none";
+			removeListeners();
+		}; 
+		reader.onerror = (e) => alert(e.target.error.name); 
+		reader.readAsText(file); 
+	}
+}
+
+function displayLogin() {
+	var tokenLink = "<a href=\"https://id.atlassian.com/manage-profile/security/api-tokens\" target=\"_blank\">HERE</a>";
+	document.getElementById("outputText").innerHTML = "To use this functionality, enter your Jira email address and API token below and click submit." +
+														"<br><br>If you don't have an API token yet, go " + tokenLink + " to create one.<br><br>" +
+														"If you would like your login credentials to be saved, follow the instructions <a href=\"javascript:saveLoginHelp();\">HERE</a>.";
+	document.getElementById("username").value='';
+	document.getElementById("pass").value='';												
+	document.getElementById("username").style.display="inline";
+	document.getElementById("userLabel").style.display="inline";
+	document.getElementById("pass").style.display="inline";
+	document.getElementById("passLabel").style.display="inline";
+	document.getElementById("username").focus();
+	document.getElementById("loginBtn").style.display="block";
+}
+
+function displayFilePicker() {
+	document.getElementById("outputText").innerHTML="";
+	document.getElementById("fileInput").style.display="inline";
+	document.getElementById("fileInputLabel").style.display="inline";
+}
+
+function submitLogin() {
+	user = document.getElementById("username").value;
+	pwd = document.getElementById("pass").value;
+	if (user.length == 0 || pwd.length == 0) {
+		alert("\nEmail address and API token are required!");
+		if (user.length == 0) {
+			document.getElementById("username").focus();
+		} else {
+			document.getElementById("pass").focus();
+		}
+		return;
+	}
+	displayFilePicker();
+	hideClass("loginInput");
+	document.getElementById("loginBtn").style.display="none";
+}
+
+async function getTicketStatus(ticketUrl) {
+	document.getElementById("fileInput").style.display="none";
+	document.getElementById("fileInputLabel").style.display="none";
+	document.getElementById("loaderLabel").style.display="block";
+	document.getElementById("loader").style.display="block";
+	var myHeaders = new Headers();
+	var separator = ":";
+	var wholeAuthorization = "Basic " + btoa(user + separator + pwd);
+	myHeaders.append("Authorization", wholeAuthorization);
+
+	var requestOptions = {
+		method: 'GET',
+		headers: myHeaders,
+		redirect: 'follow'
+	};
+
+	var wholeUrl = "https://cors-anywhere.herokuapp.com/" + ticketUrl;
+	const response = await fetch(wholeUrl, requestOptions)
+		.then(async function(response) {
+			if(response.status!==200) {
+				throw new Error(response.status)
+			} else {
+				const JiraResponse = await response.text();
+				JiraTicketResponse = JiraResponse;
+			}
+		})
+		.catch(function(error) {
+			JiraTicketResponse = "error";
+		});
+}
+
+function CheckBlockers() {
+	resetScreen();
+	document.getElementById("optionLabel").innerHTML = "Check Blockers for Validation";
+	displayLogin();
+	
+	input.addEventListener('change', processFile);
+	function processFile() {
+		let files = input.files;
+		if (files.length == 0) return; 
+		var file = files[0]; 
+		let reader = new FileReader();
+  
+		reader.onload = async (e) => {
+			var file = e.target.result; 
+			var lines = file.split(/\r\n|\n/);
+			var linesArr = new Array();
+			var blockersArr = new Array();
+			var blockerLinksArr = new Array();
+			var prodTickets = false;
+			var devbTickets = false;
+			var validatedCount = 0;
+			for (var i = 0; i < lines.length; i++) {
+				var tempLine = lines[i];
+				if (tempLine.startsWith("**Production**")) {
+					prodTickets = true;
+				} else if (tempLine.startsWith("**DevB**")) {
+					prodTickets = false;
+					devbTickets = true;
+				}
+				if (prodTickets) {
+					if (tempLine.startsWith("X")) {
+						tempLine = tempLine.substring(2, tempLine.length);
+						var ticketUrlLoc = tempLine.indexOf("https://yrcfreight.atlassian.net/browse");
+						var rightParen = tempLine.indexOf(")");
+						if (ticketUrlLoc > -1) {
+							var JiraUrl = tempLine.substring(ticketUrlLoc, rightParen-1);
+							await getTicketStatus(JiraUrl);
+							var ticketResponse = JiraTicketResponse;
+							document.getElementById("loaderLabel").style.display="none";
+							document.getElementById("loader").style.display="none";
+							if (ticketResponse !== "error") {
+								var changeLoc = ticketResponse.indexOf("Change status");
+								var ticketStatus = ticketResponse.substring(changeLoc - 100, changeLoc);
+								var buttonLoc = ticketStatus.indexOf("button aria-label");
+								ticketStatus = ticketStatus.substring(buttonLoc + 19, ticketStatus.length - 3);
+								if (ticketStatus.toUpperCase() !== "DONE" && ticketStatus.toUpperCase() !== "MIGRATED TO PROD") {
+									var ticketNum = JiraUrl.substring(JiraUrl.length-10, rightParen-1);
+									tempLine = "X " + tempLine;
+									blockersArr.push(ticketNum);
+									blockerLinksArr.push(JiraUrl);
+								}
+								linesArr.push(tempLine);
+							} else {
+								alert("\nError - something went wrong.");
+								break;
+							}
+						} else {
+							linesArr.push(tempLine);
+						}
+					} else {
+						linesArr.push(tempLine);
+					}
+				}
+			}
+			if (ticketResponse === "error") {
+				document.getElementById("optionLabel").innerHTML = "Error";
+				document.getElementById("outputText").style.textAlign = "center";
+				document.getElementById("outputText").innerHTML = "Please make sure you are entering the correct email address and API token for your Jira account.<br><br>" +
+																	"If this issue persists, send feedback to report a bug with this functionality.";
+			} else {
+				if (blockersArr.length > 0) {
+					var blockerOutputArr = new Array();
+					for (var i = 0; i < blockersArr.length; i++) {
+						blockerOutputArr.push(blockersArr[i].link(blockerLinksArr[i]));
+					}
+					document.getElementById("optionLabel").innerHTML = "The remaining PROD blockers are shown below.";
+					document.getElementById("outputText").innerHTML = "There are " + blockerOutputArr.length + " blockers left:<br/>";
+					document.getElementById("outputText").innerHTML += blockerOutputArr.join('<br/>');
+					document.getElementById("outputText").innerHTML += "<br/><br/><br/>";
+				} else {
+					document.getElementById("optionLabel").innerHTML = "There are no pending PROD blockers on this list.<br/><br/>Blockers must start with an \"X\" for this option to work.";
+				}
+				document.getElementById("outputText").innerHTML += linesArr.join('<br/>');
+			}
+			document.getElementById("fileInput").style.display="none";
+			document.getElementById("fileInputLabel").style.display="none";
+			removeListeners();
+		}; 
+		reader.onerror = (e) => alert(e.target.error.name); 
+		reader.readAsText(file); 
+	}
+}
+
+function AddProdLabel() {
+	resetScreen();
+	document.getElementById("fileInput").style.display="inline";
+	document.getElementById("fileInputLabel").style.display="inline";
+	document.getElementById("optionLabel").innerHTML = "Add \"PROD\" Label to Tickets";
+	
+	input.addEventListener('change', processFile);
+	function processFile() {
+		let files = input.files; 
+		if (files.length == 0) return; 
+		var file = files[0]; 
+		let reader = new FileReader();
+  
+		reader.onload = async (e) => {
+			var file = e.target.result; 
+			var lines = file.split(/\r\n|\n/);
+			var linesArr = new Array();
+			var prodTickets = false;
+			var devbTickets = false;
+			var foundProd = false;
+			for (var i = 0; i < lines.length; i++) {
+				var tempLine = lines[i];
+				if (tempLine.startsWith("**Production**")) {
+					prodTickets = true;
+				} else if (tempLine.startsWith("**DevB**")) {
+					prodTickets = false;
+					devbTickets = true;
+				}
+				if (prodTickets) {
+					if (!tempLine.startsWith("**Production**") && tempLine.indexOf("*") > -1) {
+						foundProd = true;
+					}
+					if (tempLine.toUpperCase().indexOf("PROD") > -1) {
+						tempLine = tempLine.replace(" PROD", "");
+					}
+					var ticketUrlLoc = tempLine.indexOf("https://yrcfreight.atlassian.net/browse");
+					if (tempLine.length > 0 && !tempLine.startsWith("**Production**")) {
+						if (ticketUrlLoc > -1) {
+							var rightParen = tempLine.indexOf(")");
+							tempLine = tempLine.substring(0, rightParen+1) + " PROD" + tempLine.substring(rightParen+1, tempLine.length);
+						} else {
+							var asteriskLoc = tempLine.indexOf("*");
+							tempLine = tempLine.substring(0, asteriskLoc+1) + " PROD" + tempLine.substring(asteriskLoc+1, tempLine.length);
+						}
+					}
+					linesArr.push(tempLine);
+				}
+			}
+			if (foundProd) {
+				document.getElementById("optionLabel").innerHTML = "The \"PROD\" label has been added to all Production tickets that did not already have it.";
+				document.getElementById("outputText").innerHTML = linesArr.join('<br/>');
+			} else {
+				document.getElementById("optionLabel").innerHTML = "There are no production tickets on this list.";
+			}
+			document.getElementById("fileInput").style.display="none";
+			document.getElementById("fileInputLabel").style.display="none";
+			removeListeners();
+		}; 
+		reader.onerror = (e) => alert(e.target.error.name); 
+		reader.readAsText(file); 
+	}
+}
+
+function Merge() {
+	resetScreen();
+	document.getElementById("fileInput").style.display="inline";
+	document.getElementById("fileInputLabel").style.display="inline";
+	document.getElementById("optionLabel").innerHTML = "Format List for Merge Request";
+	
+	input.addEventListener('change', processFile);
+	function processFile() {
 		let files = input.files; 
 		if (files.length == 0) return; 
 		var file = files[0]; 
@@ -268,10 +662,10 @@ function Merge() {
 				} else if (tempLine.startsWith("* [Merge")) {
 					var urlLoc = tempLine.indexOf("http://gitlab.yrcw.com/mcc");
 					if (urlLoc > -1) {
-						document.getElementById("goToMergeRequest").style.visibility="visible";
+						document.getElementById("goToMergeRequest").style.display="block";
 						mergeUrl = tempLine.substring(urlLoc, tempLine.indexOf(")") -1);
 					} else {
-						document.getElementById("newMergeRequest").style.visibility="visible";
+						document.getElementById("newMergeRequest").style.display="block";
 					}
 				}
 			}
@@ -280,22 +674,23 @@ function Merge() {
 			} else {
 				document.getElementById("outputText").innerHTML = linesArr.join('<br/>');
 			}
-			document.getElementById("fileInput").style.visibility="hidden";
-			document.getElementById("fileInputLabel").style.visibility="hidden";
+			document.getElementById("fileInput").style.display="none";
+			document.getElementById("fileInputLabel").style.display="none";
+			removeListeners();
 		}; 
 		reader.onerror = (e) => alert(e.target.error.name); 
 		reader.readAsText(file); 
-	});
+	}
 }
 
 function ChangeTask() {
-	document.getElementById("fileInput").style.visibility="visible";
-	document.getElementById("fileInputLabel").style.visibility="visible";
-	document.getElementById("optionButtons1").style.visibility="hidden";
+	resetScreen();
+	document.getElementById("fileInput").style.display="inline";
+	document.getElementById("fileInputLabel").style.display="inline";
 	document.getElementById("optionLabel").innerHTML = "Format List for Change Task";
-	document.getElementById("refresh").style.visibility="visible";
 	
-	input.addEventListener('change', () => {
+	input.addEventListener('change', processFile);
+	function processFile() {
 		let files = input.files; 
 		if (files.length == 0) return; 
 		var file = files[0]; 
@@ -333,10 +728,10 @@ function ChangeTask() {
 					}
 				} else if (tempLine.startsWith("* [CHG")) {
 					if (tempLine.indexOf("CHG URL HERE") < 0) {
-						document.getElementById("goToChangeRequest").style.visibility="visible";
+						document.getElementById("goToChangeRequest").style.display="block";
 						changeUrl = tempLine.substring(tempLine.indexOf("https://yrcw.service-now"), tempLine.indexOf(")")-1);
 					} else {
-						document.getElementById("newChangeRequest").style.visibility="visible";
+						document.getElementById("newChangeRequest").style.display="block";
 					}
 				}
 			}
@@ -345,25 +740,26 @@ function ChangeTask() {
 			} else {
 				document.getElementById("outputText").innerHTML = linesArr.join('<br/>');
 			}
-			document.getElementById("fileInput").style.visibility="hidden";
-			document.getElementById("fileInputLabel").style.visibility="hidden";
+			document.getElementById("fileInput").style.display="none";
+			document.getElementById("fileInputLabel").style.display="none";
+			removeListeners();
 		}; 
 		reader.onerror = (e) => alert(e.target.error.name); 
 		reader.readAsText(file); 
-	});
+	}
 }
 
 function Email() {
-	document.getElementById("fileInput").style.visibility="visible";
-	document.getElementById("fileInputLabel").style.visibility="visible";
-	document.getElementById("optionButtons1").style.visibility="hidden";
+	resetScreen();
+	document.getElementById("fileInput").style.display="inline";
+	document.getElementById("fileInputLabel").style.display="inline";
 	document.getElementById("optionLabel").innerHTML = "Format Existing List for Email";
-	document.getElementById("refresh").style.visibility="visible";
 	
-	input.addEventListener('change', () => {
-		let files = input.files; 
-		if (files.length == 0) return; 
-		var file = files[0]; 
+	input.addEventListener('change', processFile);
+	function processFile() {
+		let files = input.files;
+		if (files.length == 0) return;
+		var file = files[0];
 		let reader = new FileReader();
   
 		reader.onload = (e) => {
@@ -412,13 +808,20 @@ function Email() {
 				}
 			}
 			document.getElementById("outputText").innerHTML = linesArr.join('<br/>');
-			document.getElementById("emailButton").style.visibility="visible";
-			document.getElementById("fileInput").style.visibility="hidden";
-			document.getElementById("fileInputLabel").style.visibility="hidden";
+			document.getElementById("emailButton").style.display="block";
+			document.getElementById("fileInput").style.display="none";
+			document.getElementById("fileInputLabel").style.display="none";
+			removeListeners();
 		}; 
 		reader.onerror = (e) => alert(e.target.error.name); 
 		reader.readAsText(file); 
-	});
+	}
+}
+
+function removeListeners() {
+	var old_element = document.getElementById("fileInput");
+	var new_element = old_element.cloneNode(true);
+	old_element.parentNode.replaceChild(new_element, old_element);
 }
 
 function sendEmail() {
@@ -439,19 +842,33 @@ function getThursday() {
 	return month + '/' + day + '/' + year;
 }
 
-function displayPushDate() {
+function screenLoad() {
 	document.getElementById("dateLabel").innerHTML = "This week's PROD deploy will be on " + getThursday();
 }
 
 function sendFeedback() {
-	if (confirm("Click OK below to open a new email.\n\nFeel free to share any feedback such as discovered bugs or suggestions for improvements.")) {
+	if (confirm("\nClick OK below to open a new email.\n\nFeel free to share any feedback such as discovered bugs or suggestions for improvements.")) {
 		var to = "jesse.nickchen@yrcw.com";
 		var subject = "Ticket List Formatting Tool Feedback";
 		window.location.href = "mailto:" + to + "?subject=" + subject;
 	} else {
-		document.getElementById("optionButtons1").style.visibility="hidden";
 		document.getElementById("optionLabel").innerHTML = "Send Feedback";
-		document.getElementById("refresh").style.visibility="visible";
 		document.getElementById("outputText").innerHTML = "You clicked cancel!";
+	}
+}
+
+function showClass(className) {
+	var x = document.getElementsByClassName(className);
+	var i;
+	for (i = 0; i < x.length; i++) {
+		x[i].style.display="block";
+	}
+}
+
+function hideClass(className) {
+	var x = document.getElementsByClassName(className);
+	var i;
+	for (i = 0; i < x.length; i++) {
+		x[i].style.display="none";
 	}
 }

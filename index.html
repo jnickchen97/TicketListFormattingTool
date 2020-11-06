@@ -8,20 +8,44 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	</head>
 	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<body onload="displayPushDate();">
+	<body onload="screenLoad();">
 		<ul>
 			<li><span onclick="toggleNav()">&#9776; Help</span></li>
+			<li>
+				<div class="dropdown" id="options">
+					<button class="dropbtn">Select an Option</button>
+					<div class="dropdown-content">
+						<button onclick="NewList();" class="btnWidth">Create New Ticket List</button>
+						<button onclick="Jenkins();" class="btnWidth">Get New DevB Tickets from Jenkins</button>
+						<button onclick="NewFormat();" class="btnWidth">Format New Tickets on List</button>
+						<button onclick="MarkBlockers();" class="btnWidth">Mark All Prod Blockers</button>
+						<button onclick="CheckBlockers();" class="btnWidth">Check Blockers for Validation</button>
+						<button onclick="AddProdLabel();" class="btnWidth">Add "PROD" Label to Tickets</button>
+						<button onclick="Merge();" class="btnWidth">Format List for Merge Request</button>
+						<button onclick="ChangeTask();" class="btnWidth">Format List for Change Task</button>
+						<button onclick="Email();" class="btnWidth">Format List for Email</button>
+					</div>
+				</div>
+			</li>
 			<li><a onClick="sendFeedback();">Send Feedback</a></li>
 			<li style="float:right"><label id="dateLabel"></label></li>
 		</ul>
 		<div id="myNav" class="overlay">
 			<table class="menu-content" id="menuInfo">
 				<tr>
-					<th style="font-size:20px" colspan="3">Here's what each option does:</th>
+					<th style="font-size:20px" colspan="4">Here's what each option does:</th>
+				</tr>
+				<tr>
+					<td>Create New Ticket List:</td>
+					<td style="text-align:left;" colspan="3">This option will help create a new ticket list based on the standard template.<br>
+						The user is prompted to fill out the old and new build numbers, change request, and change request URL.
+						Buttons are available to help find all of the required information.<br>
+						Then, after clicking submit the new ticket list is downloaded as a text file.
+					</td>				
 				</tr>
 				<tr>
 					<td>Get New DevB Tickets from Jenkins:</td>
-					<td style="text-align:left;" colspan="2">This option will help format new tickets from Jenkins.<br>
+					<td style="text-align:left;" colspan="3">This option will help format new tickets from Jenkins.<br>
 						Go to Jenkins changes, and copy all text from the newest build down to the oldest build that you want.<br>
 						Don't worry if non-DevB builds are copied, as those will be filtered out.<br>
 						After copying all of the desired changes, come back to this page, paste the changes in the text box, and click format.<br>
@@ -31,26 +55,45 @@
 				</tr>
 				<tr>
 					<td>Format New Tickets on List:</td>
-					<td style="text-align:left;" colspan="2">This option finds only unformatted tickets on the selected list, and formats them correctly.<br>
+					<td style="text-align:left;" colspan="3">This option finds only unformatted tickets on the selected list, and formats them correctly.<br>
 						The newly formatted tickets will be displayed and can be copied to the ticket list.<br>
 						If any of the new tickets are a duplicate of the existing list, they will not be shown.
 					</td>
 				</tr>
 				<tr>
+					<td>Mark All Prod Blockers:</td>
+					<td style="text-align:left;" colspan="3">This option checks the status of each production ticket on the selected list, and marks it with an "X" if its status
+						is not "Done."<br>These tickets are called blockers as they are not validated and affect production.<br>A new list of all the production tickets is then displayed.<br>
+						**NOTE:** Only use this option on a newly formatted list.<br>If a list is selected where some "blockers" have already been deemed safe for production, those tickets will be marked with an "X" again. 
+					</td>
+				</tr>
+				<tr>
+					<td>Check Blockers for Validation:</td>
+					<td style="text-align:left;" colspan="3">This option checks the PROD blockers that have previously been marked with an "X."<br>If the ticket has been validated,
+						the "X" is removed.<br>A list of the remaining blockers is displayed, along with the entire list of production tickets.<br>
+						This option will not check "blockers" which have had the "X" manually removed, so it is safe to use on an existing list.
+					</td>
+				</tr>
+				<tr>
+					<td>Add "PROD" Label to Tickets:</td>
+					<td style="text-align:left;" colspan="3">This option simply adds a "PROD" label to the production tickets that do not already have this label.
+					</td>
+				</tr>
+				<tr>
 					<td>Format List for Merge Request:</td>
-					<td style="text-align:left;" colspan="2">This option displays the selected list mostly as-is, with the Merge Request line and extra whitespace removed.<br>
+					<td style="text-align:left;" colspan="3">This option displays the selected list mostly as-is, with the Merge Request line and extra whitespace removed.<br>
 						The list can then be copied directly into the merge request.
 					</td>
 				</tr>
 				<tr>
 					<td>Format List for Change Task:</td>
-					<td style="text-align:left;" colspan="2">This option displays only the tickets, formatted correctly for the change task.<br>
+					<td style="text-align:left;" colspan="3">This option displays only the tickets, formatted correctly for the change task.<br>
 						The list can then be copied directly into the detailed description section of the change task.
 					</td>
 				</tr>
 				<tr>
 					<td>Format List for Email:</td>
-					<td style="text-align:left;" colspan="2">This option displays the file compare, change request, merge request, and all tickets on the selected list.<br>
+					<td style="text-align:left;" colspan="3">This option displays the file compare, change request, merge request, and all tickets on the selected list.<br>
 						The list will be correctly formatted for the body of the PROD push notification email.<br>
 						A button is also shown that opens a new email template with the correct information.<br>
 						The formatted list can then be copied into the email.
@@ -60,42 +103,53 @@
 		</div>
 		<center>
 			<h3>MCC PROD Deploy Ticket List Formatting Tool</h3>
-			<table style="table-layout: fixed">
+			<label id="optionLabel" >Welcome to the ticket list formatting tool!</label>
+			<div>
+				<label id="welcomeLabel">
+					Here's what you can do:<br><br>
+					&nbsp;&nbsp;&nbsp;&nbsp;•&nbsp;&nbsp;Select an option from the dropdown menu<br><br>
+					&nbsp;&nbsp;&nbsp;&nbsp;•&nbsp;&nbsp;Open the help menu for information about what each option does<br><br>
+					&nbsp;&nbsp;&nbsp;&nbsp;•&nbsp;&nbsp;Send feedback about this application
+				</label>
+			</div>
+			<table>
 				<tr>
-					<th colspan="5"><label id="optionLabel">What would you like to do?</label></th>
-				</tr>
-				<tr id="optionButtons1">
-					<td class="width20"><button onclick="Jenkins();">Get New DevB Tickets from Jenkins</button></td>
-					<td class="width20"><button onclick="NewFormat();">Format New Tickets on List</button></td>
-					<td class="width20"><button onclick="Merge();">Format List for Merge Request</button></td>
-					<td class="width20"><button onclick="ChangeTask();">Format List for Change Task</button></td>
-					<td class="width20"><button onclick="Email();">Format List for Email</button></td>
-				</tr>
-				<tr>
-					<td colspan="5"><button id="refresh" style="visibility:hidden" onClick="window.location.reload();">Do Something Else</button></td>
-				</tr>
-				<tr>
-					<td class="JenkinsAll" id="JenkinsLabel"><label>Paste the text here and click format:</label></td>
-					<td><textarea class="JenkinsAll" id="JenkinsText"></textarea></td>
+					<td class="JenkinsAll">Paste the text here and click format:<textarea id="JenkinsText"></textarea></td>
 					<td>
 						<input type="file" id="fileInput"/>
 						<label for="fileInput" id="fileInputLabel">&#128194; Choose a file...</label>
 					</td>
-					<td><button class="JenkinsAll" id="JenkinsButton" onclick="JenkinsFormat();">Format</button></td>
-					<td><button id="JenkinsLink" style="visibility:hidden" onclick="navigate('https://jenkins-mcc.yrcw.com/job/app/job/mcc-modules/changes', true);">Go to Jenkins Changes</button></td>
+					<td><button class="JenkinsAll" id="JenkinsButton" onclick="JenkinsFormat();" style="margin-left:50px;">Format</button></td>
+					<td><button id="JenkinsLink" style="margin-left:150px; display:none;" onclick="toJenkinsChanges();">Go to Jenkins Changes</button></td>
 				</tr>
 			</table>
-			<div id="outputText"></div>
-			<table>
-				<tr>
-					<td class="width20"><button id="newMergeRequest" style="visibility:hidden" onclick="newMergeRequest();">Open a new merge request</button></td>
-					<td class="width20"><button id="goToMergeRequest" style="visibility:hidden" onclick="goToMergeRequest();">Go to the merge request</button></td>
-					<td class="width20"><button id="emailButton" style="visibility:hidden" onclick="sendEmail();">Ready to send the email?<br>Click here to open a template.</button></td>
-					<td class="width20"><button id="goToChangeRequest" style="visibility:hidden" onclick="goToChangeRequest();">Go to the change request</button></td>
-					<td class="width20"><button id="newChangeRequest" style="visibility:hidden" onclick="newChangeRequest();">Find the change request here</button></td>
-				</tr>
-			</table>
+			<div id="outputText" style="margin-bottom:30px;"></div>
+			<label for="username" id="userLabel" class="loginInput">Email: </label>
+			<input type="text" id="username" name="username" minlength="1" class="loginInput" style="cursor:text; margin-right:50px;" size="35">
+			<label for="pass" id="passLabel" class="loginInput">API Token: </label>
+			<input type="password" id="pass" name="password" minlength="1" class="loginInput" style="cursor:text;" size="35">
+			<button id="loginBtn" onclick="submitLogin();" style="display:none; margin-top:25px;">Submit</button>
+			<label for="oldBuild" id="oldBuildLabel" class="newList">Old Build Number: </label>
+			<input type="text" id="oldBuild" name="oldBuild" minlength="1" class="newList" style="cursor:text; margin-right:50px;" size="12">
+			<button id="oldBuildBtn" onclick="findOldBuild();" class="newList" style="display:none; margin-bottom:10px;">Find Old Build Number</button><br>
+			<label for="newBuild" id="newBuildLabel" class="newList">New Build Number: </label>
+			<input type="text" id="newBuild" name="newBuild" minlength="1" class="newList" style="cursor:text; margin-right:50px;" size="12">
+			<button id="newBuildBtn" onclick="findNewBuild();" class="newList" style="display:none; margin-bottom:10px;">Find New Build Number</button><br>
+			<label for="chgReq" id="chgReqLabel" class="newList">Change Request: </label>
+			<input type="text" id="chgReq" name="chgReq" minlength="1" class="newList" style="cursor:text; margin-right:50px;" size="12">
+			<button id="chgReqBtn" onclick="newChangeRequest();" class="newList" style="display:none; margin-bottom:10px;">Find Change Request</button><br>
+			<label for="chgReqUrl" id="chgReqUrlLabel" class="newList">Change Request URL: </label>
+			<input type="text" id="chgReqUrl" name="chgReqUrl" minlength="1" class="newList" style="cursor:text; margin-right:234px;" size="12">
+			<button id="newListBtn" onclick="submitNewList();" class="newList" style="display:none; margin-top:35px;">Submit</button>
+			<label id="loaderLabel" style="display:none;">Checking with Jira, please wait...</label><br><br></div>
+			<div id="loader" class="loader" style="display:none;"></div>
+			<button id="newMergeRequest" onclick="newMergeRequest();" style="display:none;">Open a new merge request</button>
+			<button id="goToMergeRequest" onclick="goToMergeRequest();" style="display:none;">Go to the merge request</button>
+			<button id="emailButton" onclick="sendEmail();" style="display:none;">Ready to send the email?<br>Click here to open a template.</button>
+			<button id="goToChangeRequest" onclick="goToChangeRequest();" style="display:none;">Go to the change request</button>
+			<button id="newChangeRequest" onclick="newChangeRequest();" style="display:none;">Find the change request here</button>
 		</center>
 		<script src="toolScript.js"></script>
+		<script src="fileSaver.js"></script>
 	</body>
 </html>
