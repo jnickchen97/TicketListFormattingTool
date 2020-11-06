@@ -1,6 +1,8 @@
 var input = document.getElementById("fileInput");
 var user;
 var pwd;
+var newListBuilder;
+var ticketsToo;
 
 function resetScreen() {
 	removeListeners();
@@ -12,6 +14,7 @@ function resetScreen() {
 	hideClass("JenkinsAll");
 	document.getElementById("JenkinsButton").style.display="none";
 	document.getElementById("JenkinsLink").style.display="none";
+	document.getElementById("JenkinsText").value = "";
 	document.getElementById("fileInput").style.display="none";
 	document.getElementById("fileInputLabel").style.display="none";
 	document.getElementById("loaderLabel").style.display="none";
@@ -36,6 +39,9 @@ function resetScreen() {
 	document.getElementById("chgReqUrl").value = "";
 	user = "";
 	pwd = "";
+	document.getElementById("alsoGetTickets").style.display="none";
+	document.getElementById("alsoGetTicketsLabel").style.display="none";
+	document.getElementById("alsoGetTickets").checked = false;
 }
 
 function hideOptions() {
@@ -51,7 +57,7 @@ function toggleNav() {
 }
 
 function openNav() {
-	document.getElementById("myNav").style.width = "1280px";
+	document.getElementById("myNav").style.width = "100%";
 	setTimeout(function(){ document.getElementById("menuInfo").style.visibility="visible"; }, 450);
 }
 
@@ -78,6 +84,8 @@ function newChangeRequest() {
 
 function NewList() {
 	resetScreen();
+	newListBuilder = "";
+	ticketsToo = false;
 	document.getElementById("optionLabel").innerHTML = "Create New Ticket List<br><br><br><br>Fill out the information below, and click submit.";
 	document.getElementById("oldBuildLabel").style.display="inline-block";
 	document.getElementById("oldBuild").style.display="inline-block";
@@ -90,6 +98,8 @@ function NewList() {
 	document.getElementById("chgReqBtn").style.display="inline-block";
 	document.getElementById("chgReqUrlLabel").style.display="inline-block";
 	document.getElementById("chgReqUrl").style.display="inline-block";
+	document.getElementById("alsoGetTickets").style.display="inline-block";
+	document.getElementById("alsoGetTicketsLabel").style.display="inline-block";
 	document.getElementById("newListBtn").style.display="block";
 }
 
@@ -107,9 +117,18 @@ function submitNewList() {
 	var newBuild = document.getElementById("newBuild").value;
 	var chgReq = document.getElementById("chgReq").value;
 	var chgReqUrl = document.getElementById("chgReqUrl").value;
-	var newListBuilder = "* [Previous Release File Compare] (http://gitlab.yrcw.com/mcc/app/mcc-modules/compare/" + oldBuild + "..." + newBuild + " )\n" +
+	newListBuilder = "* [Previous Release File Compare] (http://gitlab.yrcw.com/mcc/app/mcc-modules/compare/" + oldBuild + "..." + newBuild + " )\n" +
 		"* [" + chgReq + "] (" + chgReqUrl + " )\n" + "* [Merge Request] ([MERGE REQUEST URL HERE] ) (see merge request for additional DevB fixes, they are not included in this email)\n\n" +
 		"**Production**\n\n**DevB**\n\n\n\n";
+	if (document.getElementById("alsoGetTickets").checked == true) {
+		ticketsToo = true;
+		Jenkins();
+	} else {
+		downloadList();
+	}
+}
+
+function downloadList() {
 	var blob = new Blob([newListBuilder], {
 		type: "text/plain;charset=utf-8"
 	});
@@ -170,13 +189,18 @@ function JenkinsFormat() {
 		}
 		linesArr = formatCleanup(linesArr);
 		if (linesArr.length != 0) {
-			document.getElementById("outputText").innerHTML = linesArr.join('<br/>');
+			document.getElementById("outputText").innerHTML = linesArr.join('<br>');
 		} else {
 			document.getElementById("outputText").style.textAlign = "center";
 			document.getElementById("outputText").innerHTML = "No changes were found to be formatted.<br><br><br><br>Make sure that you are copying the build headings along with their respective changes.";
 		}
 	} else {
 		document.getElementById("outputText").innerHTML = "You haven't entered anything in the text box! Try again.";
+	}
+	if (ticketsToo == true) {
+		ticketsToo = false;
+		newListBuilder += linesArr.join('\n');
+		downloadList();
 	}
 }
 		
@@ -403,8 +427,7 @@ function MarkBlockers() {
 function displayLogin() {
 	var tokenLink = "<a href=\"https://id.atlassian.com/manage-profile/security/api-tokens\" target=\"_blank\">HERE</a>";
 	document.getElementById("outputText").innerHTML = "To use this functionality, enter your Jira email address and API token below and click submit." +
-														"<br><br>If you don't have an API token yet, go " + tokenLink + " to create one.<br><br>" +
-														"If you would like your login credentials to be saved, follow the instructions <a href=\"javascript:saveLoginHelp();\">HERE</a>.";
+														"<br><br>If you don't have an API token yet, go " + tokenLink + " to create one.<br><br>";
 	document.getElementById("username").value='';
 	document.getElementById("pass").value='';												
 	document.getElementById("username").style.display="inline";

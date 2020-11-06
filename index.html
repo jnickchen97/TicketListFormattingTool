@@ -33,70 +33,63 @@
 		<div id="myNav" class="overlay">
 			<table class="menu-content" id="menuInfo">
 				<tr>
-					<th style="font-size:20px" colspan="4">Here's what each option does:</th>
+					<th style="font-size:20px" colspan="8">Here's what each option does:</th>
 				</tr>
 				<tr>
 					<td>Create New Ticket List:</td>
-					<td style="text-align:left;" colspan="3">This option will help create a new ticket list based on the standard template.<br>
-						The user is prompted to fill out the old and new build numbers, change request, and change request URL.
+					<td style="text-align:left;" colspan="3" class="padCol1">This option will help create a new ticket list based on the standard template.<br>
+						The user is prompted to enter the old and new build numbers, and change request number and URL.<br>
 						Buttons are available to help find all of the required information.<br>
-						Then, after clicking submit the new ticket list is downloaded as a text file.
-					</td>				
+						Then, after clicking submit the new ticket list is downloaded as a text file.<br>
+						If the appropriate checkbox is checked, the user can add new tickets to the list before it is downloaded.
+					</td>
+					<td class="padCol2">Add "PROD" Label to Tickets:</td>
+					<td style="text-align:left;" colspan="3"">This option simply adds a "PROD" label to the production tickets that do not already have this label.
+					</td>
 				</tr>
 				<tr>
 					<td>Get New DevB Tickets from Jenkins:</td>
-					<td style="text-align:left;" colspan="3">This option will help format new tickets from Jenkins.<br>
-						Go to Jenkins changes, and copy all text from the newest build down to the oldest build that you want.<br>
+					<td style="text-align:left;" colspan="3" class="padCol1">This option will help format new tickets from Jenkins.<br>
+						Go to Jenkins changes, and copy all text from the newest build down to the oldest build you want.<br>
 						Don't worry if non-DevB builds are copied, as those will be filtered out.<br>
 						After copying all of the desired changes, come back to this page, paste the changes in the text box, and click format.<br>
 						The tickets will be displayed in the correct format, and can then be copied and pasted directly into the ticket list file.<br>
 						There is also a button that goes to the Jenkins changes page.
-					</td>				
-				</tr>
-				<tr>
-					<td>Format New Tickets on List:</td>
-					<td style="text-align:left;" colspan="3">This option finds only unformatted tickets on the selected list, and formats them correctly.<br>
-						The newly formatted tickets will be displayed and can be copied to the ticket list.<br>
-						If any of the new tickets are a duplicate of the existing list, they will not be shown.
 					</td>
-				</tr>
-				<tr>
-					<td>Mark All Prod Blockers:</td>
-					<td style="text-align:left;" colspan="3">This option checks the status of each production ticket on the selected list, and marks it with an "X" if its status
-						is not "Done."<br>These tickets are called blockers as they are not validated and affect production.<br>A new list of all the production tickets is then displayed.<br>
-						**NOTE:** Only use this option on a newly formatted list.<br>If a list is selected where some "blockers" have already been deemed safe for production, those tickets will be marked with an "X" again. 
-					</td>
-				</tr>
-				<tr>
-					<td>Check Blockers for Validation:</td>
-					<td style="text-align:left;" colspan="3">This option checks the PROD blockers that have previously been marked with an "X."<br>If the ticket has been validated,
-						the "X" is removed.<br>A list of the remaining blockers is displayed, along with the entire list of production tickets.<br>
-						This option will not check "blockers" which have had the "X" manually removed, so it is safe to use on an existing list.
-					</td>
-				</tr>
-				<tr>
-					<td>Add "PROD" Label to Tickets:</td>
-					<td style="text-align:left;" colspan="3">This option simply adds a "PROD" label to the production tickets that do not already have this label.
-					</td>
-				</tr>
-				<tr>
-					<td>Format List for Merge Request:</td>
+					<td class="padCol2">Format List for Merge Request:</td>
 					<td style="text-align:left;" colspan="3">This option displays the selected list mostly as-is, with the Merge Request line and extra whitespace removed.<br>
 						The list can then be copied directly into the merge request.
 					</td>
 				</tr>
 				<tr>
-					<td>Format List for Change Task:</td>
+					<td>Format New Tickets on List:</td>
+					<td style="text-align:left;" colspan="3" class="padCol1">This option finds only unformatted tickets on the selected list, and formats them correctly.<br>
+						The newly formatted tickets will be displayed and can be copied to the ticket list.<br>
+						If any of the new tickets are a duplicate of the existing list, they will not be shown.
+					</td>
+					<td class="padCol2">Format List for Change Task:</td>
 					<td style="text-align:left;" colspan="3">This option displays only the tickets, formatted correctly for the change task.<br>
 						The list can then be copied directly into the detailed description section of the change task.
 					</td>
 				</tr>
 				<tr>
-					<td>Format List for Email:</td>
-					<td style="text-align:left;" colspan="3">This option displays the file compare, change request, merge request, and all tickets on the selected list.<br>
+					<td>Mark All Prod Blockers:</td>
+					<td style="text-align:left;" colspan="3" class="padCol1">This option checks the status of each production ticket on the selected list, and marks it with an "X" if its status
+						is not "Done."<br>These tickets are called blockers as they are not validated and affect production.<br>A new list of all the production tickets is then displayed.<br>
+						**NOTE:** Only use this option on a newly formatted list.<br>If a list is selected where some "blockers" have already been deemed safe for production, those tickets will be marked with an "X" again. 
+					</td>
+					<td class="padCol2">Format List for Email:</td>
+					<td style="text-align:left;;" colspan="3">This option displays the file compare, change request, merge request, and all tickets on the selected list.<br>
 						The list will be correctly formatted for the body of the PROD push notification email.<br>
 						A button is also shown that opens a new email template with the correct information.<br>
 						The formatted list can then be copied into the email.
+					</td>
+				</tr>
+				<tr>
+					<td>Check Blockers for Validation:</td>
+					<td style="text-align:left;" colspan="3" class="padCol1">This option checks the PROD blockers that have previously been marked with an "X."<br>If the ticket has been validated,
+						the "X" is removed.<br>A list of the remaining blockers is displayed, along with the entire list of production tickets.<br>
+						This option will not check "blockers" which have had the "X" manually removed, so it is safe to use on an existing list.
 					</td>
 				</tr>
 			</table>
@@ -139,7 +132,9 @@
 			<input type="text" id="chgReq" name="chgReq" minlength="1" class="newList" style="cursor:text; margin-right:50px;" size="12">
 			<button id="chgReqBtn" onclick="newChangeRequest();" class="newList" style="display:none; margin-bottom:10px;">Find Change Request</button><br>
 			<label for="chgReqUrl" id="chgReqUrlLabel" class="newList">Change Request URL: </label>
-			<input type="text" id="chgReqUrl" name="chgReqUrl" minlength="1" class="newList" style="cursor:text; margin-right:234px;" size="12">
+			<input type="text" id="chgReqUrl" name="chgReqUrl" minlength="1" class="newList" style="cursor:text; margin-right:234px; margin-bottom:40px;" size="12"><br>
+			<label for="alsoGetTickets" id="alsoGetTicketsLabel" class="newList">Check this box to also add tickets to the list: </label>
+			<input type="checkbox" id="alsoGetTickets" name="alsoGetTickets" value="yes" class="newList">
 			<button id="newListBtn" onclick="submitNewList();" class="newList" style="display:none; margin-top:35px;">Submit</button>
 			<label id="loaderLabel" style="display:none;">Checking with Jira, please wait...</label><br><br></div>
 			<div id="loader" class="loader" style="display:none;"></div>

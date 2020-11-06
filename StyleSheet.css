@@ -28,7 +28,7 @@
 	text-align: center;
 	visibility: hidden;
 	table-layout: fixed;
-	width: 95%;
+	width: 100%;
 	height: 95%;
 	padding: 5px;
 }
@@ -283,4 +283,12 @@ li a:hover, li span:hover {
 	font-family: Calibri;
 	display: block;
 	text-align: left;
+}
+
+.padCol1 {
+	padding-right: 50px;
+}
+
+.padCol2 {
+	padding-left: 50px;
 }
