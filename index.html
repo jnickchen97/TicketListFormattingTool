@@ -15,15 +15,15 @@
 				<div class="dropdown" id="options">
 					<button class="dropbtn">Select an Option</button>
 					<div class="dropdown-content">
-						<button onclick="NewList();" class="btnWidth">Create New Ticket List</button>
-						<button onclick="Jenkins();" class="btnWidth">Get New DevB Tickets from Jenkins</button>
-						<button onclick="AffectsProd();" class="btnWidth">Check Which New Tickets Affect Prod</button>
-						<button onclick="MarkBlockers();" class="btnWidth">Mark All Prod Blockers</button>
-						<button onclick="CheckBlockers();" class="btnWidth">Check Blockers for Validation</button>
-						<button onclick="AddProdLabel();" class="btnWidth">Add "PROD" Label to Tickets</button>
-						<button onclick="Merge();" class="btnWidth">Format List for Merge Request</button>
-						<button onclick="ChangeTask();" class="btnWidth">Format List for Change Task</button>
-						<button onclick="Email();" class="btnWidth">Format List for Email</button>
+						<button onclick="newList();" class="btnWidth">Create New Ticket List</button>
+						<button onclick="jenkins();" class="btnWidth">Get New DevB Tickets from Jenkins</button>
+						<button onclick="affectsProd();" class="btnWidth">Check Which New Tickets Affect Prod</button>
+						<button onclick="markBlockers();" class="btnWidth">Mark All Prod Blockers</button>
+						<button onclick="checkBlockers();" class="btnWidth">Check Blockers for Validation</button>
+						<button onclick="addProdLabel();" class="btnWidth">Add "PROD" Label to Tickets</button>
+						<button onclick="merge();" class="btnWidth">Format List for Merge Request</button>
+						<button onclick="changeTask();" class="btnWidth">Format List for Change Task</button>
+						<button onclick="email();" class="btnWidth">Format List for Email</button>
 					</div>
 				</div>
 			</li>
@@ -111,7 +111,7 @@
 						<input type="file" id="fileInput"/>
 						<label for="fileInput" id="fileInputLabel">&#128194; Choose a file...</label>
 					</td>
-					<td><button class="JenkinsAll" id="JenkinsButton" onclick="JenkinsFormat();" style="margin-left:50px;">Format</button></td>
+					<td><button class="JenkinsAll" id="JenkinsButton" onclick="jenkinsFormat();" style="margin-left:50px;">Format</button></td>
 					<td><button id="JenkinsLink" style="margin-left:150px; display:none;" onclick="toJenkinsChanges();">Go to Jenkins Changes</button></td>
 				</tr>
 			</table>
@@ -129,16 +129,16 @@
 			<button id="loginBtn" onclick="submitLogin();" style="display:none; margin-top:25px;">Submit</button>
 			<label for="oldBuild" id="oldBuildLabel" class="newList">Old Build Number: </label>
 			<input type="text" id="oldBuild" name="oldBuild" minlength="1" class="newList" style="cursor:text; margin-right:50px;" size="12">
-			<button id="oldBuildBtn" onclick="findOldBuild();" class="newList" style="display:none; margin-bottom:10px;">Find Old Build Number</button><br>
-			<label for="newBuild" id="newBuildLabel" class="newList">New Build Number: </label>
+			<button id="oldBuildBtn" onclick="findOldBuild();" class="newList" style="display:none; margin-bottom:10px;">Find Old Build Number</button>
+			<label class="newListSpacing"></label><label for="newBuild" id="newBuildLabel" class="newList">New Build Number: </label>
 			<input type="text" id="newBuild" name="newBuild" minlength="1" class="newList" style="cursor:text; margin-right:50px;" size="12">
-			<button id="newBuildBtn" onclick="findNewBuild();" class="newList" style="display:none; margin-bottom:10px;">Find New Build Number</button><br>
-			<label for="chgReq" id="chgReqLabel" class="newList">Change Request: </label>
+			<button id="newBuildBtn" onclick="findNewBuild();" class="newList" style="display:none; margin-bottom:10px;">Find New Build Number</button>
+			<label class="newListSpacing"></label><label for="chgReq" id="chgReqLabel" class="newList">Change Request: </label>
 			<input type="text" id="chgReq" name="chgReq" minlength="1" class="newList" style="cursor:text; margin-right:50px;" size="12">
-			<button id="chgReqBtn" onclick="newChangeRequest();" class="newList" style="display:none; margin-bottom:10px;">Find Change Request</button><br>
-			<label for="chgReqUrl" id="chgReqUrlLabel" class="newList">Change Request URL: </label>
-			<input type="text" id="chgReqUrl" name="chgReqUrl" minlength="1" class="newList" style="cursor:text; margin-right:234px; margin-bottom:40px;" size="12"><br>
-			<label for="alsoGetTickets" id="alsoGetTicketsLabel" class="newList">Check this box to also add tickets to the list: </label>
+			<button id="chgReqBtn" onclick="newChangeRequest();" class="newList" style="display:none; margin-bottom:10px;">Find Change Request</button>
+			<label class="newListSpacing"></label><label for="chgReqUrl" id="chgReqUrlLabel" class="newList">Change Request URL: </label>
+			<input type="text" id="chgReqUrl" name="chgReqUrl" minlength="1" class="newList" style="cursor:text; margin-right:234px; margin-bottom:40px;" size="12">
+			<label class="newListSpacing"></label><label for="alsoGetTickets" id="alsoGetTicketsLabel" class="newList">Check this box to also add tickets to the list: </label>
 			<input type="checkbox" id="alsoGetTickets" name="alsoGetTickets" value="yes" class="newList">
 			<button id="newListBtn" onclick="submitNewList();" class="newList" style="display:none; margin-top:35px;">Submit</button>
 			<label id="loaderLabel" style="display:none;">Loading, please wait...</label><br><br></div>
@@ -148,6 +148,7 @@
 			<button id="emailButton" onclick="sendEmail();" style="display:none;">Ready to send the email?<br>Click here to open a template.</button>
 			<button id="goToChangeRequest" onclick="goToChangeRequest();" style="display:none;">Go to the change request</button>
 			<button id="newChangeRequest" onclick="newChangeRequest();" style="display:none;">Find the change request here</button>
+			<br><br>
 		</center>
 		<script src="toolScript.js"></script>
 		<script src="fileSaver.js"></script>

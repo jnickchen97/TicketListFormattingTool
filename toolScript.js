@@ -1,25 +1,39 @@
+// file input variable
 var input = document.getElementById("fileInput");
-var user;
-var pwd;
-var JiraTicketResponse;
-var GitlabResponse;
-var newListBuilder;
-var ticketsToo;
-var affectsToo;
-var mmpiTicket;
-var m2jvTicket;
-var linesArrAffects;
-var mergeReqArr;
-var foundProdAdd;
-var prodTicketsAdd;
-var foundProdMark;
-var linesArrMark;
-var prodTicketsMark;
-var ticketResponseMark;
-var linesArrFormatted;
-var linesAffects;
-var continueProcessing;
 
+// string variables
+var JiraTicketResponse = "";
+var m2jvTicket = "";
+var mmpiTicket = "";
+var newListBuilder = "";
+var pwd = "";
+var user = "";
+
+// boolean variables
+var swAddTicketsFromJenkins = false;
+var swAddTicketsToNewList = false;
+var swCheckNewTicketsAffectProd = false;
+var swCheckProd = false;
+var swFoundDupTicket = false;
+var swFoundProdSection = false;
+var swFoundswFoundProd = false;
+var swMarkBlockersAfterAffectsProd = false;
+var swDeployNextWeek = false;
+
+// array variables
+var arrAllJenkinsTickets;
+var arrCheckAffectsFoundProd;
+var arrCheckFoundProd;
+var arrCheckProdNoTicket;
+var arrExistingDevbTickets;
+var arrExistingHeadings;
+var arrExistingFoundProd;
+var arrFormattedJenkinsTickets;
+var arrMergeReqLinks;
+var arrNotCheckedAsProd;
+var arrTicketsMarkedBlockers;
+
+// clear variables and setup screen when a new option is clicked
 function resetScreen() {
 	removeListeners();
 	input = document.getElementById("fileInput");
@@ -70,13 +84,10 @@ function resetScreen() {
 	document.getElementById("alsoAffectsProdLabel").style.display="none";
 	document.getElementById("alsoAffectsProd").checked = false;
 	document.getElementById("affectsProdBtn").style.display = "none";
-	
+	hideClass("newListSpacing");
 }
 
-function hideOptions() {
-	document.getElementById("options").style.display="none";
-}
-
+// toggle help menu open or closed
 function toggleNav() {
 	if (document.getElementById("myNav").offsetWidth > 0) {
 		closeNav();
@@ -85,37 +96,48 @@ function toggleNav() {
 	}
 }
 
+// open help menu
 function openNav() {
 	document.getElementById("myNav").style.width = "100%";
 	setTimeout(function(){ document.getElementById("menuInfo").style.visibility="visible"; }, 450);
 }
 
+// close help menu
 function closeNav() {
 	document.getElementById("myNav").style.width = "0%";
 	document.getElementById("menuInfo").style.visibility="hidden";
 }
 
+// goes to existing merge request when button is clicked
 function goToMergeRequest() {
 	navigate(mergeUrl, true);
 }
 
+// opens new merge request when button is clicked
 function newMergeRequest() {
 	navigate("http://gitlab.yrcw.com/mcc/environment/mcc-environment-prod/edit/master/prod-images.properties", true);
 }
 
+// goes to existing change request when button is clicked
 function goToChangeRequest() {
 	navigate(changeUrl, true);
 }
 
+// goes to change request list when button is clicked
 function newChangeRequest() {
 	navigate("https://yrcw.service-now.com/nav_to.do?uri=%2Fchange_request_list.do%3Fsysparm_query%3DstateNOT%2520IN9%252C10%255Eassigned_to.nameSTARTSWITHmoore%26sysparm_first_row%3D1%26sysparm_view%3D%26sysparm_choice_query_raw%3D%26sysparm_list_header_search%3Dtrue", true);
 	document.getElementById("chgReq").focus();
 }
 
-function NewList() {
+// menu option Create New Ticket List
+function newList() {
 	resetScreen();
+	resetTicketArrays();
 	newListBuilder = "";
-	ticketsToo = false;
+	swAddTicketsToNewList = false;
+	swCheckProd = false;
+	swAddTicketsFromJenkins = false;
+	showClass("newListSpacing");
 	document.getElementById("optionLabel").innerHTML = "Create New Ticket List<br><br><br><br>Fill out the information below, and click submit.";
 	document.getElementById("oldBuildLabel").style.display="inline-block";
 	document.getElementById("oldBuild").style.display="inline-block";
@@ -134,16 +156,19 @@ function NewList() {
 	document.getElementById("oldBuild").focus();
 }
 
+// goes to prod properties file when button is clicked
 function findOldBuild() {
 	navigate("http://gitlab.yrcw.com/mcc/environment/mcc-environment-prod/blob/master/prod-images.properties", true);
 	document.getElementById("oldBuild").focus();
 }
 
+// goes to Jenkins changes when button is clicked
 function findNewBuild() {
 	navigate("https://jenkins-mcc.yrcw.com/job/app/job/mcc-modules/changes", true);
 	document.getElementById("newBuild").focus();
 }
 
+// processes input values into new list when button is clicked
 function submitNewList() {
 	hideClass("newList");
 	var oldBuild = document.getElementById("oldBuild").value;
@@ -153,14 +178,16 @@ function submitNewList() {
 	newListBuilder = "* [Previous Release File Compare] (http://gitlab.yrcw.com/mcc/app/mcc-modules/compare/" + oldBuild + "..." + newBuild + " )\n" +
 		"* [" + chgReq + "] (" + chgReqUrl + " )\n" + "* [Merge Request] ([MERGE REQUEST URL HERE] ) (see merge request for additional DevB fixes, they are not included in this email)\n\n";
 	if (document.getElementById("alsoGetTickets").checked == true) {
-		ticketsToo = true;
-		Jenkins();
+		swAddTicketsToNewList = true;
+		jenkins();
 	} else {
 		newListBuilder += "**Production**\n\n**DevB**\n\n\n\n";
+		document.getElementById("outputText").innerHTML = newListBuilder.split('\n').join('<br>');
 		downloadList();
 	}
 }
 
+// downloads built list
 function downloadList() {
 	var blob = new Blob([newListBuilder], {
 		type: "text/plain;charset=utf-8"
@@ -172,23 +199,110 @@ function downloadList() {
 	document.getElementById("optionLabel").innerHTML = "The new ticket list has been saved to your downloads folder as " + deployDate + ".";
 }
 
-function Jenkins() {
+// menu option Get New DevB Tickets from Jenkins
+function jenkins() {
 	resetScreen();
-	affectsToo = false;
+	swCheckNewTicketsAffectProd = false;
+	swCheckProd = false;
+	swAddTicketsFromJenkins = true;
 	document.getElementById("optionLabel").innerHTML = "Get New DevB Tickets from Jenkins";
-	showClass("JenkinsAll");
-	document.getElementById("JenkinsButton").style.display="inline-block";
-	document.getElementById("JenkinsLink").style.display="inline-block";
-	document.getElementById("JenkinsText").focus();
-	document.getElementById("alsoAffectsProd").style.display="inline-block";
-	document.getElementById("alsoAffectsProdLabel").style.display="inline-block";
+	arrFormattedJenkinsTickets = new Array();
+	if (!swAddTicketsToNewList) {
+		document.getElementById("optionLabel").innerHTML += "<br><br><br><br>Please select the file for your current ticket list below.";
+		document.getElementById("fileInput").style.display="inline";
+		document.getElementById("fileInputLabel").style.display="inline";
+		input.addEventListener('change', processFile);
+		function processFile() {
+			let files = input.files; 
+			if (files.length == 0) return; 
+			var file = files[0]; 
+			let reader = new FileReader();
+
+			reader.onload = (e) => {
+				var file = e.target.result;
+				var lines = file.split(/\r\n|\n/);
+				arrFormattedJenkinsTickets = file.split(/\r\n|\n/);
+				var swFoundProd = false;
+				resetTicketArrays();
+			
+				for (var i = 0; i < lines.length; i++) {
+					var tempLine = lines[i];
+					if (tempLine.startsWith("**Production**")) {
+						swFoundProd = true;
+					} else if (tempLine.startsWith("**DevB**")) {
+						swFoundProd = false;
+					}
+					if (i < 3) {
+						arrExistingHeadings.push(tempLine);
+					}
+					if (swFoundProd && tempLine.indexOf("*") > -1 && !tempLine.startsWith("**Production**")) {
+						arrExistingFoundProd.push(tempLine);
+						var formattedTicket = getTicketTitle(tempLine);
+						if (formattedTicket !== "none") {
+							arrAllJenkinsTickets.push(formattedTicket);
+						}
+					} else if (!swFoundProd && tempLine.indexOf("*") > -1 && !tempLine.startsWith("**DevB**") && i >= 3) {
+						arrExistingDevbTickets.push(tempLine);
+						var formattedTicket = getTicketTitle(tempLine);
+						if (formattedTicket !== "none") {
+							arrAllJenkinsTickets.push(formattedTicket);
+						}
+					}
+				}
+				
+				document.getElementById("optionLabel").innerHTML = "Get New DevB Tickets from Jenkins";
+				document.getElementById("fileInput").style.display="none";
+				document.getElementById("fileInputLabel").style.display="none";
+				document.getElementById("JenkinsButton").style.display="inline-block";
+				document.getElementById("JenkinsLink").style.display="inline-block";
+				document.getElementById("JenkinsText").focus();
+				document.getElementById("alsoAffectsProd").style.display="inline-block";
+				document.getElementById("alsoAffectsProdLabel").style.display="inline-block";
+				showClass("JenkinsAll");
+				removeListeners();
+			};
+			reader.onerror = (e) => alert(e.target.error.name); 
+			reader.readAsText(file); 
+		}
+	} else {
+		arrFormattedJenkinsTickets = newListBuilder.split(/\r\n|\n/);
+		document.getElementById("JenkinsButton").style.display="inline-block";
+		document.getElementById("JenkinsLink").style.display="inline-block";
+		document.getElementById("JenkinsText").focus();
+		document.getElementById("alsoAffectsProd").style.display="inline-block";
+		document.getElementById("alsoAffectsProdLabel").style.display="inline-block";
+		showClass("JenkinsAll");
+	}
 }
 
+// resets arrays
+function resetTicketArrays() {
+	arrExistingHeadings = new Array();
+	arrExistingFoundProd = new Array();
+	arrExistingDevbTickets = new Array();
+	arrAllJenkinsTickets = new Array();
+}
+
+// returns formatted ticket number, if found
+function getTicketTitle(tempLine) {
+	var mmpiLoc = tempLine.toUpperCase().indexOf("MMPI");
+	var m2jvLoc = tempLine.toUpperCase().indexOf("M2JV");
+	if (mmpiLoc > -1) {
+		return tempLine.substring(mmpiLoc, mmpiLoc + 10);
+	} else if (m2jvLoc > -1) {
+		return tempLine.substring(m2jvLoc, m2jvLoc + 10);
+	} else {
+		return "none";
+	}
+}
+
+// goes to Jenkins changes when button is clicked
 function toJenkinsChanges() {
 	navigate('https://jenkins-mcc.yrcw.com/job/app/job/mcc-modules/changes', true);
 	document.getElementById("JenkinsText").focus();
 }
 
+// opens input URL in new tab
 function navigate(href, newTab) {
 	var a = document.createElement('a');
 	a.href = href;
@@ -198,7 +312,8 @@ function navigate(href, newTab) {
 	a.click();
 }
 
-function JenkinsFormat() {
+// runs when format button is clicked after entering new tickets
+function jenkinsFormat() {
 	hideClass("JenkinsAll");
 	document.getElementById("JenkinsButton").style.display="none";
 	document.getElementById("JenkinsLink").style.display="none";
@@ -206,11 +321,10 @@ function JenkinsFormat() {
 	document.getElementById("alsoAffectsProdLabel").style.display="none";
 	
 	if (document.getElementById("alsoAffectsProd").checked == true) {
-		affectsToo = true;
+		swCheckNewTicketsAffectProd = true;
 	}
 	
-	var linesArr = new Array();
-	var ticketNumbers = new Array();
+	var arrFileLines = new Array();
 	var lines = document.getElementById("JenkinsText").value.split(/\r\n|\n/);
 	var allText = document.getElementById("JenkinsText").value;
 	
@@ -220,19 +334,31 @@ function JenkinsFormat() {
 			var developBuild = tempLine.indexOf("- Branch [develop]");
 			var anyBuild = tempLine.indexOf("- Branch [");
 			if (anyBuild > -1) {
-				var inDevelop = false;
+				var swInDevelopBuild = false;
 				if (developBuild > -1) {
-					inDevelop = true;
+					swInDevelopBuild = true;
 				}
 			}
-			if (tempLine.length != 0 && tempLine !== "Changes" && inDevelop && anyBuild < 0) {
-				linesArr.push(tempLine);
+			if (tempLine.length != 0 && tempLine !== "Changes" && swInDevelopBuild && anyBuild < 0) {
+				arrFileLines.push(tempLine);
 			}
 		}
-		linesArr = formatCleanup(linesArr);
-		if (linesArr.length != 0) {
-			if (!affectsToo) {
-				document.getElementById("outputText").innerHTML = linesArr.join('<br>');
+		arrFileLines = cleanupLines(arrFileLines);
+		if (arrFileLines.length != 0) {
+			if (!swCheckNewTicketsAffectProd) {
+				var devbSpacing5 = "";
+				var devbSpacing6 = "<br>";
+				if (!swAddTicketsToNewList) {
+					devbSpacing5 = "<br><br>";
+					devbSpacing6 = "";
+				}
+				document.getElementById("optionLabel").innerHTML = "New tickets have been formatted and added to the end of the list.";
+				document.getElementById("outputText").innerHTML = arrExistingHeadings.join('<br>') + newListBuilder.split('\n').join('<br>') + devbSpacing5 + "**Production**<br>" + devbSpacing6 +
+					arrExistingFoundProd.join('<br>') + devbSpacing5 + "**DevB**<br>" + arrExistingDevbTickets.join('<br>') + "<br><br><br>";
+				if (!swAddTicketsToNewList) {
+					document.getElementById("outputText").innerHTML += "<br>";
+				}
+				document.getElementById("outputText").innerHTML += arrFileLines.join('<br>');
 			}
 		} else {
 			document.getElementById("outputText").style.textAlign = "center";
@@ -241,93 +367,82 @@ function JenkinsFormat() {
 	} else {
 		document.getElementById("outputText").innerHTML = "You haven't entered anything in the text box! Try again.";
 	}
-	if (ticketsToo && !affectsToo) {
-		ticketsToo = false;
-		newListBuilder += "**Production**\n\n**DevB**\n\n\n\n" + linesArr.join('\n');
+	if (swAddTicketsToNewList && !swCheckNewTicketsAffectProd) {
+		swAddTicketsToNewList = false;
+		newListBuilder += "**Production**\n\n**DevB**\n\n\n\n" + arrFileLines.join('\n');
 		downloadList();
-	} else if (affectsToo) {
-		linesArrFormatted = linesArr.join('\n');
-		AffectsProd();
+	} else if (swCheckNewTicketsAffectProd) {
+		arrFormattedJenkinsTickets.push("");
+		for (var i = 0; i < arrFileLines.length; i++) {
+			arrFormattedJenkinsTickets.push(arrFileLines[i]);
+		}
+		affectsProd();
 	}
 }
 
-function formatCleanup(lines) {
-	var linesArr = new Array();
-	var ticketNumbers = new Array();
+// cleans up input line and adds to array if it's not a duplicate
+function cleanupLines(lines) {
+	var arrFileLines = new Array();
 	for (var i = 0; i < lines.length; i++) {
 		var tempLine = lines[i];
 		if (tempLine.length != 0 && !tempLine.startsWith("*") && !tempLine.toUpperCase().startsWith("X") && !tempLine.startsWith("?")) {
 			tempLine = tempLine.replace("[", "");
 			tempLine = tempLine.replace("]", "");
 			tempLine = tempLine.replace("WIP:", "");
-			tempLine = tempLine.replace("DEVB", "");
 			tempLine = tempLine.substring(0, tempLine.length - 9);
 			if (tempLine.toUpperCase().indexOf("ROLLBACK") < 0 && tempLine.toUpperCase().indexOf("REVERT") < 0) {
 				tempLine = formatLine(tempLine);
 			}
-			var foundDup = false;
-			for (var t = 0; t < ticketNumbers.length; t++) {
+			checkDups(tempLine);
+			if (!swFoundDupTicket) {
 				if (mmpiTicket.length != 0) {
-					if (ticketNumbers[t] === mmpiTicket) {
-						foundDup = true;
-						break;
-					}
+					arrAllJenkinsTickets.push(mmpiTicket);
 				} else if (m2jvTicket.length != 0) {
-					if (ticketNumbers[t] === m2jvTicket) {
-						foundDup = true;
-						break;
-					}
+					arrAllJenkinsTickets.push(m2jvTicket);
 				}
+				arrFileLines.push(tempLine);
 			}
-			if (!foundDup) {
-				if (mmpiTicket.length != 0) {
-					ticketNumbers.push(mmpiTicket);
-				} else if (m2jvTicket.length != 0) {
-					ticketNumbers.push(m2jvTicket);
+		}
+	}
+	return arrFileLines;
+}
+
+// check if current ticket is a duplicate of existing list
+function checkDups(tempLine) {
+	var mmpiLoc = tempLine.toUpperCase().indexOf("MMPI");
+	var m2jvLoc = tempLine.toUpperCase().indexOf("M2JV");
+	mmpiTicket = "";
+	m2jvTicket = "";
+	if (mmpiLoc > -1) {
+		mmpiTicket = tempLine.substring(mmpiLoc, mmpiLoc + 10);
+	} else if (m2jvLoc > -1) {
+		m2jvTicket = tempLine.substring(m2jvLoc, m2jvLoc + 10);
+	}
+	swFoundDupTicket = false;
+	if (tempLine.toUpperCase().indexOf("ROLLBACK") < 0 && tempLine.toUpperCase().indexOf("REVERT") < 0) {
+		for (var t = 0; t < arrAllJenkinsTickets.length; t++) {
+			if (mmpiTicket.length != 0) {
+				if (arrAllJenkinsTickets[t] === mmpiTicket) {
+					swFoundDupTicket = true;
+					break;
 				}
-				linesArr.push(tempLine);
-			}
-		} else {
-			var mmpiLoc = tempLine.toUpperCase().indexOf("MMPI");
-			if (mmpiLoc > -1) {
-				mmpiTicket = tempLine.substring(mmpiLoc, mmpiLoc + 10);
-			}
-			var m2jvLoc = tempLine.toUpperCase().indexOf("M2JV");
-			if (m2jvLoc > -1) {
-				m2jvTicket = tempLine.substring(m2jvLoc, m2jvLoc + 10);
-			}
-			var foundDup = false;
-			for (var t = 0; t < ticketNumbers.length; t++) {
-				if (mmpiTicket.length != 0) {
-					if (ticketNumbers[t] === mmpiTicket) {
-						foundDup = true;
-						break;
-					}
-				} else if (m2jvTicket.length != 0) {
-					if (ticketNumbers[t] === m2jvTicket) {
-						foundDup = true;
-						break;
-					}
-				}
-			}
-			if (!foundDup) {
-				if (mmpiTicket.length != 0) {
-					ticketNumbers.push(mmpiTicket);
-				} else if (m2jvTicket.length != 0) {
-					ticketNumbers.push(m2jvTicket);
+			} else if (m2jvTicket.length != 0) {
+				if (arrAllJenkinsTickets[t] === m2jvTicket) {
+					swFoundDupTicket = true;
+					break;
 				}
 			}
 		}
 	}
-	return linesArr;
 }
 
+// formats and returns new line
 function formatLine(tempLine) {
 	var lineNoSpaces = tempLine.replace(/[ -]/g, "");
 	var mmpiLoc = lineNoSpaces.toUpperCase().indexOf("MMPI");
 	var m2jvLoc = lineNoSpaces.toUpperCase().indexOf("M2JV");
 	if (!tempLine.startsWith("*")) {
-		if (mmpiLoc > -1) {
+		if (mmpiLoc > -1 && tempLine.toUpperCase().indexOf("ROLLBACK") < 0 && tempLine.toUpperCase().indexOf("REVERT") < 0) {
 			mmpiTicket = lineNoSpaces.substring(mmpiLoc, mmpiLoc + 9);
 			mmpiTicket = mmpiTicket.substring(0, 4) + "-" + mmpiTicket.substring(4, mmpiTicket.length);
 			tempLine = tempLine.substring(0, mmpiLoc) + tempLine.substring(mmpiLoc + 10, tempLine.length);
@@ -341,7 +456,7 @@ function formatLine(tempLine) {
 			}
 			tempLine = tempLine.substring(realStart, tempLine.length);
 			tempLine = "* [" + mmpiTicket + "] (https://yrcfreight.atlassian.net/browse/" + mmpiTicket + " ) " + tempLine.trim();
-		} else if (m2jvLoc > -1) {
+		} else if (m2jvLoc > -1 && tempLine.toUpperCase().indexOf("ROLLBACK") < 0 && tempLine.toUpperCase().indexOf("REVERT") < 0) {
 			m2jvTicket = lineNoSpaces.substring(m2jvLoc, m2jvLoc + 9);
 			m2jvTicket = m2jvTicket.substring(0, 4) + "-" + m2jvTicket.substring(4, m2jvTicket.length);
 			tempLine = tempLine.substring(0, m2jvLoc) + tempLine.substring(m2jvLoc + 10, tempLine.length);
@@ -364,14 +479,16 @@ function formatLine(tempLine) {
 	return tempLine;
 }
 
-function AffectsProd() {
+// menu option Check Which New Tickets Affect Prod
+function affectsProd() {
 	resetScreen();
-	document.getElementById("optionLabel").innerHTML = "Check Which Tickets Affect Prod";
-	linesAffects = new Array();
-	continueProcessing = false;
+	document.getElementById("optionLabel").innerHTML = "Check Which New Tickets Affect Prod";
+	arrCheckAffectsFoundProd = new Array();
+	swMarkBlockersAfterAffectsProd = false;
+	swCheckProd = true;
+	displayLogin();
 	
-	if (!affectsToo) {
-		displayLogin();
+	if (!swCheckNewTicketsAffectProd) {
 		input.addEventListener('change', processFile);
 		function processFile() {
 			let files = input.files; 
@@ -381,39 +498,54 @@ function AffectsProd() {
   
 			reader.onload = (e) => {
 				var file = e.target.result; 
-				linesAffects = file.split(/\r\n|\n/);
+				arrCheckAffectsFoundProd = file.split(/\r\n|\n/);
 				processLines();
 				removeListeners();
 			}; 
 			reader.onerror = (e) => alert(e.target.error.name); 
 			reader.readAsText(file); 
 		}
-	} else {
-		continueProcessing = true;
-		displayLogin();
-		linesAffects = linesArrFormatted.split(/\r\n|\n/);
 	}
 }
 
+// check if new tickets affect prod
 async function processLines() {
-	linesArrAffects = new Array();
-	mergeReqArr = new Array();
-	var devbTickets = false;
+	arrCheckFoundProd = new Array();
+	arrCheckProdNoTicket = new Array();
+	arrMergeReqLinks = new Array();
+	var swDevbTickets = false;
 	var blanks = 0;
-	for (var i = 0; i < linesAffects.length; i++) {
-		var tempLine = linesAffects[i];
-		if (tempLine.startsWith("**DevB**")) {
-			devbTickets = true;
+	arrExistingHeadings = new Array();
+	arrExistingFoundProd = new Array();
+	arrExistingDevbTickets = new Array();
+	var swFoundProd = false;
+	for (var i = 0; i < arrCheckAffectsFoundProd.length; i++) {
+		var tempLine = arrCheckAffectsFoundProd[i];
+		if (tempLine.startsWith("**Production**")) {
+			swFoundProd = true;
+		} else if (tempLine.startsWith("**DevB**")) {
+			swFoundProd = false;
 		}
-		if (devbTickets || affectsToo) {
+		if (i < 3) {
+			arrExistingHeadings.push(tempLine);
+		}
+		if (swFoundProd && tempLine.indexOf("*") > -1 && !tempLine.startsWith("**Production**")) {
+			arrExistingFoundProd.push(tempLine);
+		} else if (!swFoundProd && tempLine.indexOf("*") > -1 && !tempLine.startsWith("**DevB**") && i >= 3 && blanks == 0) {
+			arrExistingDevbTickets.push(tempLine);
+		}
+		if (tempLine.startsWith("**DevB**")) {
+			swDevbTickets = true;
+		}
+		if (swDevbTickets || swAddTicketsToNewList) {
 			if (tempLine.length == 0) {
 				blanks++;
 			}
-			if ((blanks > 0 && tempLine.length > 0) || affectsToo) {
-				var tempLine = formatLine(tempLine);
+			if ((blanks > 0 && tempLine.length > 0)) {
+				tempLine = formatLine(tempLine);
 				ticketUrlLoc = tempLine.indexOf("https://yrcfreight.atlassian.net/browse");
 				var rightParen = tempLine.indexOf(")");
-
+				
 				if (ticketUrlLoc > -1) {
 					var JiraUrl = tempLine.substring(ticketUrlLoc, rightParen-1);
 					await getTicketStatus(JiraUrl);
@@ -426,24 +558,17 @@ async function processLines() {
 							var mergeReqUrl = ticketResponse.substring(mergeReqUrlLoc+6, mergeReqUrlLoc+75);
 							var quoteLoc = mergeReqUrl.indexOf("\"");
 							mergeReqUrl = mergeReqUrl.substring(0, quoteLoc);
-							mergeReqArr.push(mergeReqUrl);
+							arrMergeReqLinks.push(mergeReqUrl);
 						} else {
-							mergeReqArr.push(JiraUrl);
+							arrMergeReqLinks.push(JiraUrl);
 						}
-						if (!affectsToo) {
-							tempLine = tempLine.substring(0, tempLine.length-9);
-						}
-						linesArrAffects.push(tempLine);
+						arrCheckFoundProd.push(tempLine);
 					} else {
 						alert("\nError - something went wrong.");
 						break;
 					}
 				} else {
-					mergeReqArr.push("None found");
-					if (!affectsToo) {
-						tempLine = tempLine.substring(0, tempLine.length-9);
-					}
-					linesArrAffects.push(tempLine);
+					arrCheckProdNoTicket.push(tempLine);
 				}
 			}
 		}
@@ -454,15 +579,22 @@ async function processLines() {
 		document.getElementById("outputText").innerHTML = "Please make sure you are entering the correct email address and API token for your Jira account.<br><br>" +
 			"If this issue persists, send feedback to report a bug with this functionality.";
 	} else {
-		addTable(mergeReqArr, linesArrAffects);
-		document.getElementById("affectsProdBtn").style.display = "block";
-		document.getElementById("optionLabel").innerHTML = "Mark the checkbox next to the tickets that affect production, and click done.<br><br>" +
-			"You can use the merge request links to determine what programs are being changed, and whether the changes affect production or not.<br>";
-		document.getElementById("alsoMarkBlockers").style.display="inline-block";
-		document.getElementById("alsoMarkBlockersLabel").style.display="inline-block";
+		if (arrCheckFoundProd.length > 0) {
+			addTable(arrMergeReqLinks, arrCheckFoundProd);
+			document.getElementById("affectsProdBtn").style.display = "block";
+			document.getElementById("optionLabel").innerHTML = "Mark the checkbox next to the tickets that affect production, and click done.<br><br>" +
+				"You can use the merge request links to determine what programs are being changed, and whether the changes affect production or not.<br>";
+			document.getElementById("alsoMarkBlockers").style.display="inline-block";
+			document.getElementById("alsoMarkBlockersLabel").style.display="inline-block";
+		} else {
+			document.getElementById("fileInput").style.display="none";
+			document.getElementById("fileInputLabel").style.display="none";
+			document.getElementById("optionLabel").innerHTML = "No new tickets were found on this list.";
+		}
 	}
 }
 
+// display table of new tickets with merge request and checkbox
 function addTable(MergeRequests, JiraTickets) {
 	var myTableDiv = document.getElementById("myDynamicTable");
 	var table = document.createElement('TABLE');
@@ -489,15 +621,15 @@ function addTable(MergeRequests, JiraTickets) {
 		tableBody.appendChild(tr);
 		
 		for (var j = 0; j < 3; j++) {
-			var noMerge;
-			var jiraNoMerge = false;
+			var swNoMerge;
+			var swJiraswNoMerge = false;
 			var currentMerge = MergeRequests[i]
 			if (currentMerge.toUpperCase() === "NONE FOUND") {
-				noMerge = true;
+				swNoMerge = true;
 			} else if (currentMerge.toUpperCase().indexOf("ATLASSIAN") > -1) {
-				jiraNoMerge = true;
+				swJiraswNoMerge = true;
 			} else {
-				noMerge = false;
+				swNoMerge = false;
 			}
 			var td = document.createElement('TD');
 			if (j == 0) {
@@ -509,13 +641,13 @@ function addTable(MergeRequests, JiraTickets) {
 				td.appendChild(newCheckBox);
 			} else if (j == 1) {
 				td.style.textAlign = "left";
-				if (noMerge) {
+				if (swNoMerge) {
 					const anchor = document.createElement('a');
 					anchor.href = "http://gitlab.yrcw.com/mcc/app/mcc-modules/merge_requests?scope=all&state=merged";
 					anchor.innerText = "None found, search here";
 					anchor.target = "_blank";
 					td.appendChild(anchor);
-				} else if (jiraNoMerge) {
+				} else if (swJiraswNoMerge) {
 					var mmpiTitleLoc = currentMerge.toUpperCase().indexOf("MMPI");
 					var m2jvTitleLoc = currentMerge.toUpperCase().indexOf("M2JV");
 					const anchor = document.createElement('a');
@@ -546,87 +678,164 @@ function addTable(MergeRequests, JiraTickets) {
 	myTableDiv.appendChild(table);
 }
 
+// runs after done button is clicked to check if changes affect prod
 async function submitAffectsProd() {
 	document.getElementById("alsoMarkBlockers").style.display="none";
 	document.getElementById("alsoMarkBlockersLabel").style.display="none";
 	document.getElementById("myDynamicTable").style.display = "none";
 	document.getElementById("affectsProdBtn").style.display = "none";
-	if (!affectsToo && !document.getElementById("alsoMarkBlockers").checked) {
+	if (!swCheckNewTicketsAffectProd && !document.getElementById("alsoMarkBlockers").checked) {
 		document.getElementById("optionLabel").innerHTML = "The new tickets on the list have been formatted and sorted as either Production or DevB.";
 	} else {
 		document.getElementById("optionLabel").innerHTML = "Mark All Prod Blockers";
 	}
-	var prodTicketsArr = new Array();
-	var devbTicketsArr = new Array();
+	var arrCheckedAsProd = new Array();
+	arrNotCheckedAsProd = new Array();
 
-	for (var i = 0; i < linesArrAffects.length; i++) {
+	for (var i = 0; i < arrCheckFoundProd.length; i++) {
 		if (document.getElementById("prodChk" + i).checked == true) {
-			prodTicketsArr.push(markLabel(linesArrAffects[i], false));
+			arrCheckedAsProd.push(markLabel(arrCheckFoundProd[i], false));
 		} else {
-			devbTicketsArr.push(linesArrAffects[i]);
+			arrNotCheckedAsProd.push(arrCheckFoundProd[i]);
 		}
 	}
 	
-	var allTicketsArr = new Array();
-	allTicketsArr.push("**Production**");
-	for (var i = 0; i < prodTicketsArr.length; i++) {
-		allTicketsArr.push(prodTicketsArr[i]);
-	}
-	allTicketsArr.push("");
-	allTicketsArr.push("**DevB**");
-	for (var i = 0; i < devbTicketsArr.length; i++) {
-		allTicketsArr.push(devbTicketsArr[i]);
-	}
-	
-	if (document.getElementById("alsoMarkBlockers").checked == true) {
-		linesArrMark = new Array();
-		prodTicketsMark = false;
-		foundProdMark = false;
-		for (var i = 0; i < allTicketsArr.length; i++) {
-			var tempLine = allTicketsArr[i];
-			await doTheMarking(tempLine);
-			if (ticketResponseMark === "error") {
-				break;
-			}
+	var arrListToDownload = new Array();
+	if (!swAddTicketsToNewList) {
+		arrListToDownload.push("**Production**");
+		for (var i = 0; i < arrCheckedAsProd.length; i++) {
+			arrListToDownload.push(arrCheckedAsProd[i]);
 		}
-		markProdMessages();
-		if (devbTicketsArr.length > 0) {
-			document.getElementById("outputText").innerHTML += "<br>**DevB**<br>" + devbTicketsArr.join('<br/>');
+		arrListToDownload.push("");
+		arrListToDownload.push("**DevB**");
+		for (var i = 0; i < arrNotCheckedAsProd.length; i++) {
+			arrListToDownload.push(arrNotCheckedAsProd[i]);
 		}
 	} else {
-		document.getElementById("outputText").innerHTML = allTicketsArr.join('<br/>');
+		for (var i = 0; i < arrExistingHeadings.length; i++) {
+			arrListToDownload.push(arrExistingHeadings[i]);
+		}
+		arrListToDownload.push("");
+		arrListToDownload.push("**Production**");
+		for (var i = 0; i < arrCheckedAsProd.length; i++) {
+			arrListToDownload.push(arrCheckedAsProd[i]);
+		}
+		arrListToDownload.push("");
+		arrListToDownload.push("**DevB**");
+		for (var i = 0; i < arrNotCheckedAsProd.length; i++) {
+			arrListToDownload.push(arrNotCheckedAsProd[i]);
+		}
 	}
-	if (affectsToo && ticketsToo) {
-		ticketsToo = false;
-		affectsToo = false;
-		newListBuilder += linesArrMark.join('\n');
-		for (var i = linesArrMark.length; i < allTicketsArr.length; i++) {
-			newListBuilder += '\n' + allTicketsArr[i];
+	
+	arrTicketsMarkedBlockers = new Array();
+	if (document.getElementById("alsoMarkBlockers").checked == true) {
+		swMarkBlockersAfterAffectsProd = true;
+	}
+	swFoundProdSection = false;
+	for (var i = 0; i < arrListToDownload.length; i++) {
+		var tempLine = arrListToDownload[i];
+		await lookForProd(tempLine);
+		if (JiraTicketResponse === "error") {
+			break;
+		}
+	}
+	markProdMessages();
+	if (swCheckNewTicketsAffectProd && swAddTicketsToNewList) {
+		swCheckNewTicketsAffectProd = false;
+		swAddTicketsToNewList = false;
+		for (var i = 0; i < arrExistingHeadings.length; i++) {
+			if (i == 0) {
+				newListBuilder = arrExistingHeadings[i];
+			} else {
+				newListBuilder += '\n' + arrExistingHeadings[i];
+			}
+		}
+		for (var i = 0; i < arrTicketsMarkedBlockers.length; i++) {
+			if (i == 0) {
+				newListBuilder += '\n\n' + arrTicketsMarkedBlockers[i];
+			} else {
+				newListBuilder += '\n' + arrTicketsMarkedBlockers[i];
+			}
+		}
+		newListBuilder += "\n**DevB**\n";
+		newListBuilder += arrNotCheckedAsProd.join('\n');
+		if (arrCheckProdNoTicket.length > 0) {
+			var devbSpacing4 = "";
+			if (arrNotCheckedAsProd.length > 0) {
+				devbSpacing4 = "\n\n\n\n";
+			} else {
+				devbSpacing4 = "\n\n\n";
+			}
+			newListBuilder += devbSpacing4 + arrCheckProdNoTicket.join('\n');
 		}
 		downloadList();
 	}
 }
 
+// display list with tickets in production or devb section
 function markProdMessages() {
-	if (ticketResponseMark === "error") {
+	if (JiraTicketResponse === "error") {
 		document.getElementById("optionLabel").innerHTML = "Error";
 		document.getElementById("outputText").style.textAlign = "center";
 		document.getElementById("outputText").innerHTML = "Please make sure you are entering the correct email address and API token for your Jira account.<br><br>" +
 			"If this issue persists, send feedback to report a bug with this functionality.";
 	} else {
-		if (foundProdMark) {
+		if (swCheckProd && !swAddTicketsFromJenkins) {
+			var devbSpacing = "";
+			if (arrNotCheckedAsProd.length > 0) {
+				devbSpacing = "<br>";
+			}
+			document.getElementById("optionLabel").innerHTML = "Tickets have been sorted as either Production or DevB and added to the appropriate group.";
+			if (swMarkBlockersAfterAffectsProd) {
+				document.getElementById("optionLabel").innerHTML += "<br><br>Production tickets that have a status other than Done have been marked with an \"X\" and added to the ticket list.";
+			}
+			document.getElementById("outputText").innerHTML = arrExistingHeadings.join('<br>') + "<br><br>" + arrTicketsMarkedBlockers.join('<br/>') + arrExistingFoundProd.join('<br>') +
+				"<br><br>**DevB**" + devbSpacing + arrNotCheckedAsProd.join('<br>') + "<br>" + arrExistingDevbTickets.join('<br>');
+			if (arrCheckProdNoTicket.length > 0) {
+				document.getElementById("outputText").innerHTML += "<br><br><br><br>" + arrCheckProdNoTicket.join('\n');
+			}
+		} else if (swCheckProd && swAddTicketsFromJenkins) {
+			var devbSpacing = "<br>";
+			var devbSpacing2 = "<br>";
+			var devbSpacing3 = "";
+			if (!swAddTicketsToNewList) {
+				devbSpacing += "<br>";
+				if (arrNotCheckedAsProd.length == 0) {
+					devbSpacing2 = "";
+				}
+			}
+			if (arrNotCheckedAsProd.length > 0) {
+				devbSpacing3 = "<br><br><br>";
+			} else {
+				devbSpacing3 = "<br><br>";
+			}
+			document.getElementById("optionLabel").innerHTML = "Tickets have been sorted as either Production or DevB and added to the appropriate group.";
+			document.getElementById("outputText").innerHTML = arrExistingHeadings.join('<br>') + "<br><br>" + arrTicketsMarkedBlockers.join('<br/>') + arrExistingFoundProd.join('<br>') +
+				devbSpacing + "**DevB**" + devbSpacing2 + arrNotCheckedAsProd.join('<br>') + "<br>" + arrExistingDevbTickets.join('<br>');
+			if (arrCheckProdNoTicket.length > 0) {
+				document.getElementById("outputText").innerHTML += devbSpacing3;
+				if (!swAddTicketsToNewList) {
+					if (arrNotCheckedAsProd.length > 0) {
+						document.getElementById("outputText").innerHTML += "<br>";
+					} else {
+						document.getElementById("outputText").innerHTML += "<br><br>";
+					}
+				}
+				document.getElementById("outputText").innerHTML += arrCheckProdNoTicket.join('\n');
+			}
+		} else if (!swCheckProd) {
 			document.getElementById("optionLabel").innerHTML = "Production tickets that have a status other than Done have been marked with an \"X\"";
-			document.getElementById("outputText").innerHTML = linesArrMark.join('<br/>');
-		} else {
-			document.getElementById("optionLabel").innerHTML = "There are no production tickets on this list.";
+			document.getElementById("outputText").innerHTML = arrTicketsMarkedBlockers.join('<br/>');
 		}
 	}
 }
 
-function MarkBlockers() {
+// menu option Mark All Prod Blockers
+function markBlockers() {
 	resetScreen();
 	document.getElementById("optionLabel").innerHTML = "Mark All Prod Blockers";
 	displayLogin();
+	swMarkBlockersAfterAffectsProd = true;
 	
 	input.addEventListener('change', processFile);
 	function processFile() {
@@ -638,13 +847,12 @@ function MarkBlockers() {
 		reader.onload = async (e) => {
 			var file = e.target.result; 
 			var lines = file.split(/\r\n|\n/);
-			linesArrMark = new Array();
-			prodTicketsMark = false;
-			foundProdMark = false;
+			arrTicketsMarkedBlockers = new Array();
+			swFoundProdSection = false;
 			for (var i = 0; i < lines.length; i++) {
 				var tempLine = lines[i];
-				await doTheMarking(tempLine);
-				if (ticketResponseMark === "error") {
+				await lookForProd(tempLine);
+				if (JiraTicketResponse === "error") {
 					break;
 				}
 			}
@@ -656,46 +864,50 @@ function MarkBlockers() {
 	}
 }
 
-async function doTheMarking(tempLine) {
+// looks for prod tickets, and processes those tickets if found
+async function lookForProd(tempLine) {
 	if (tempLine.startsWith("**Production**")) {
-		prodTicketsMark = true;
+		swFoundProdSection = true;
 	} else if (tempLine.startsWith("**DevB**")) {
-		prodTicketsMark = false;
+		swFoundProdSection = false;
 	}
-	if (prodTicketsMark) {
-		if (!tempLine.startsWith("**Production**") && tempLine.indexOf("*") > -1) {
-			foundProdMark = true;
-		}
-		if (tempLine.toUpperCase().startsWith("X")) {
-			tempLine = tempLine.substring(2, tempLine.length);
-		}
-		var ticketUrlLoc = tempLine.indexOf("https://yrcfreight.atlassian.net/browse");
-		var rightParen = tempLine.indexOf(")");
-		if (ticketUrlLoc > -1) {
-			var JiraUrl = tempLine.substring(ticketUrlLoc, rightParen-1);
-			await getTicketStatus(JiraUrl);
-			ticketResponseMark = JiraTicketResponse;
-			document.getElementById("loaderLabel").style.display="none";
-			document.getElementById("loader").style.display="none";
-			if (ticketResponseMark !== "error") {
-				var changeLoc = ticketResponseMark.indexOf("Change status");
-				var ticketStatus = ticketResponseMark.substring(changeLoc - 100, changeLoc);
-				var buttonLoc = ticketStatus.indexOf("button aria-label");
-				ticketStatus = ticketStatus.substring(buttonLoc + 19, ticketStatus.length - 3);
-				if (ticketStatus.toUpperCase() !== "DONE" && ticketStatus.toUpperCase() !== "MIGRATED TO PROD") {
-					tempLine = "X " + tempLine;
-				}
-				linesArrMark.push(tempLine);
-			} else {
-				alert("\nError - something went wrong.");
-				ticketResponseMark = "error";
-			}
-		} else {
-			linesArrMark.push(tempLine);
-		}
+	if (swFoundProdSection) {
+		await processMarking(tempLine);
 	}
 }
 
+// check status of Jira ticket
+async function processMarking(tempLine) {
+	if (tempLine.toUpperCase().startsWith("X")) {
+		tempLine = tempLine.substring(2, tempLine.length);
+	}
+	var ticketUrlLoc = tempLine.indexOf("https://yrcfreight.atlassian.net/browse");
+	var rightParen = tempLine.indexOf(")");
+	if (ticketUrlLoc > -1 && swMarkBlockersAfterAffectsProd) {
+		var JiraUrl = tempLine.substring(ticketUrlLoc, rightParen-1);
+		await getTicketStatus(JiraUrl);
+		JiraTicketResponse = JiraTicketResponse;
+		document.getElementById("loaderLabel").style.display="none";
+		document.getElementById("loader").style.display="none";
+		if (JiraTicketResponse !== "error") {
+			var changeLoc = JiraTicketResponse.indexOf("Change status");
+			var ticketStatus = JiraTicketResponse.substring(changeLoc - 100, changeLoc);
+			var buttonLoc = ticketStatus.indexOf("button aria-label");
+			ticketStatus = ticketStatus.substring(buttonLoc + 19, ticketStatus.length - 3);
+			if (ticketStatus.toUpperCase() !== "DONE" && ticketStatus.toUpperCase() !== "MIGRATED TO PROD") {
+				tempLine = "X " + tempLine;
+			}
+			arrTicketsMarkedBlockers.push(tempLine);
+		} else {
+			alert("\nError - something went wrong.");
+			JiraTicketResponse = "error";
+		}
+	} else {
+		arrTicketsMarkedBlockers.push(tempLine);
+	}
+}
+
+// show Jira login
 function displayLogin() {
 	var tokenLink = createLink("https://id.atlassian.com/manage-profile/security/api-tokens", "HERE");
 	document.getElementById("outputText").innerHTML = "To use this functionality, enter your Jira email address and API token below and click submit." +
@@ -710,12 +922,7 @@ function displayLogin() {
 	document.getElementById("loginBtn").style.display="block";
 }
 
-function displayFilePicker() {
-	document.getElementById("outputText").innerHTML="";
-	document.getElementById("fileInput").style.display="inline";
-	document.getElementById("fileInputLabel").style.display="inline";
-}
-
+// runs after clicking submit to login with Jira credentials
 function submitLogin() {
 	user = document.getElementById("username").value;
 	pwd = document.getElementById("pass").value;
@@ -728,14 +935,18 @@ function submitLogin() {
 		}
 		return;
 	}
-	displayFilePicker();
+	document.getElementById("outputText").innerHTML="";
+	document.getElementById("fileInput").style.display="inline";
+	document.getElementById("fileInputLabel").style.display="inline";
 	hideClass("loginInput");
 	document.getElementById("loginBtn").style.display="none";
-	if (continueProcessing) {
+	if (swCheckNewTicketsAffectProd) {
+		arrCheckAffectsFoundProd = arrFormattedJenkinsTickets;
 		processLines();
 	}
 }
 
+// returns Jira ticket status
 async function getTicketStatus(ticketUrl) {
 	document.getElementById("fileInput").style.display="none";
 	document.getElementById("fileInputLabel").style.display="none";
@@ -767,7 +978,8 @@ async function getTicketStatus(ticketUrl) {
 		});
 }
 
-function CheckBlockers() {
+// menu option Check Blockers for Validation
+function checkBlockers() {
 	resetScreen();
 	document.getElementById("optionLabel").innerHTML = "Check Blockers for Validation";
 	displayLogin();
@@ -782,19 +994,19 @@ function CheckBlockers() {
 		reader.onload = async (e) => {
 			var file = e.target.result; 
 			var lines = file.split(/\r\n|\n/);
-			var linesArr = new Array();
-			var blockersArr = new Array();
-			var blockerLinksArr = new Array();
-			var prodTickets = false;
+			var arrFileLines = new Array();
+			var arrBlockerTicketNums = new Array();
+			var arrBlockerTicketLinks = new Array();
 			var validatedCount = 0;
+			var swFoundProd = false;
 			for (var i = 0; i < lines.length; i++) {
 				var tempLine = lines[i];
 				if (tempLine.startsWith("**Production**")) {
-					prodTickets = true;
+					swFoundProd = true;
 				} else if (tempLine.startsWith("**DevB**")) {
-					prodTickets = false;
+					swFoundProd = false;
 				}
-				if (prodTickets) {
+				if (swFoundProd) {
 					if (tempLine.startsWith("X")) {
 						tempLine = tempLine.substring(2, tempLine.length);
 						var ticketUrlLoc = tempLine.indexOf("https://yrcfreight.atlassian.net/browse");
@@ -813,19 +1025,19 @@ function CheckBlockers() {
 								if (ticketStatus.toUpperCase() !== "DONE" && ticketStatus.toUpperCase() !== "MIGRATED TO PROD") {
 									var ticketNum = JiraUrl.substring(JiraUrl.length-10, rightParen-1);
 									tempLine = "X " + tempLine;
-									blockersArr.push(ticketNum);
-									blockerLinksArr.push(JiraUrl);
+									arrBlockerTicketNums.push(ticketNum);
+									arrBlockerTicketLinks.push(JiraUrl);
 								}
-								linesArr.push(tempLine);
+								arrFileLines.push(tempLine);
 							} else {
 								alert("\nError - something went wrong.");
 								break;
 							}
 						} else {
-							linesArr.push(tempLine);
+							arrFileLines.push(tempLine);
 						}
 					} else {
-						linesArr.push(tempLine);
+						arrFileLines.push(tempLine);
 					}
 				}
 			}
@@ -835,19 +1047,25 @@ function CheckBlockers() {
 				document.getElementById("outputText").innerHTML = "Please make sure you are entering the correct email address and API token for your Jira account.<br><br>" +
 																	"If this issue persists, send feedback to report a bug with this functionality.";
 			} else {
-				if (blockersArr.length > 0) {
-					var blockerOutputArr = new Array();
-					for (var i = 0; i < blockersArr.length; i++) {
-						blockerOutputArr.push(createLink(blockerLinksArr[i], blockersArr[i]));
+				if (arrBlockerTicketNums.length > 0) {
+					var arrBlockersOutput = new Array();
+					for (var i = 0; i < arrBlockerTicketNums.length; i++) {
+						arrBlockersOutput.push(createLink(arrBlockerTicketLinks[i], arrBlockerTicketNums[i]));
 					}
 					document.getElementById("optionLabel").innerHTML = "The remaining PROD blockers are shown below.";
-					document.getElementById("outputText").innerHTML = "There are " + blockerOutputArr.length + " blocker(s) left:<br/>";
-					document.getElementById("outputText").innerHTML += blockerOutputArr.join('<br/>');
+					if (arrBlockersOutput.length != 1) {
+						document.getElementById("outputText").innerHTML = "There are " + arrBlockersOutput.length + " blockers left:<br/>";
+					} else {
+						document.getElementById("outputText").innerHTML = "There is " + arrBlockersOutput.length + " blocker left:<br/>";
+					}
+					document.getElementById("outputText").innerHTML += arrBlockersOutput.join('<br/>');
 					document.getElementById("outputText").innerHTML += "<br/><br/><br/>";
+					document.getElementById("outputText").innerHTML += arrFileLines.join('<br/>');
 				} else {
+					document.getElementById("fileInput").style.display="none";
+					document.getElementById("fileInputLabel").style.display="none";
 					document.getElementById("optionLabel").innerHTML = "There are no pending PROD blockers on this list.<br/><br/>Blockers must start with an \"X\" for this option to work.";
 				}
-				document.getElementById("outputText").innerHTML += linesArr.join('<br/>');
 			}
 			removeListeners();
 		}; 
@@ -856,7 +1074,8 @@ function CheckBlockers() {
 	}
 }
 
-function AddProdLabel() {
+// menu option Add "PROD" Label to Tickets
+function addProdLabel() {
 	resetScreen();
 	document.getElementById("fileInput").style.display="inline";
 	document.getElementById("fileInputLabel").style.display="inline";
@@ -872,20 +1091,20 @@ function AddProdLabel() {
 		reader.onload = async (e) => {
 			var file = e.target.result; 
 			var lines = file.split(/\r\n|\n/);
-			var linesArr = new Array();
-			prodTicketsAdd = false;
-			foundProdAdd = false;
+			var arrFileLines = new Array();
+			swFoundProdSection = false;
+			swFoundswFoundProd = false;
 			
 			for (var i = 0; i < lines.length; i++) {
 				var tempLine = lines[i];
 				tempLine = markLabel(tempLine, true);
-				if (prodTicketsAdd) {
-					linesArr.push(tempLine);
+				if (swFoundProdSection) {
+					arrFileLines.push(tempLine);
 				}
 			}
-			if (foundProdAdd) {
+			if (swFoundswFoundProd) {
 				document.getElementById("optionLabel").innerHTML = "The \"PROD\" label has been added to all Production tickets that did not already have it.";
-				document.getElementById("outputText").innerHTML = linesArr.join('<br/>');
+				document.getElementById("outputText").innerHTML = arrFileLines.join('<br/>');
 			} else {
 				document.getElementById("optionLabel").innerHTML = "There are no production tickets on this list.";
 			}
@@ -898,16 +1117,17 @@ function AddProdLabel() {
 	}
 }
 
+// if input ticket is production, add the PROD label unless it already has it
 function markLabel(tempLine, checkIfProd) {
 	if (tempLine.startsWith("**Production**")) {
-		prodTicketsAdd = true;
+		swFoundProdSection = true;
 	} else if (tempLine.startsWith("**DevB**")) {
-		prodTicketsAdd = false;
+		swFoundProdSection = false;
 	}
 	
-	if (prodTicketsAdd || !checkIfProd) {
+	if (swFoundProdSection || !checkIfProd) {
 		if (!tempLine.startsWith("**Production**") && tempLine.indexOf("*") > -1) {
-			foundProdAdd = true;
+			swFoundswFoundProd = true;
 		}
 		if (tempLine.toUpperCase().indexOf("PROD") > -1) {
 			tempLine = tempLine.replace(" PROD", "");
@@ -926,7 +1146,8 @@ function markLabel(tempLine, checkIfProd) {
 	return tempLine;
 }
 
-function Merge() {
+// menu option Format List for Merge Request
+function merge() {
 	resetScreen();
 	document.getElementById("fileInput").style.display="inline";
 	document.getElementById("fileInputLabel").style.display="inline";
@@ -942,24 +1163,23 @@ function Merge() {
 		reader.onload = (e) => {
 			var file = e.target.result; 
 			var lines = file.split(/\r\n|\n/);
-			var linesArr = new Array();
-			var ticketNumbers = new Array();
-			var foundBlank = false;
+			var arrFileLines = new Array();
+			var swFoundBlank = false;
 			for (var i = 0; i < lines.length; i++) {
 				var tempLine = lines[i];
 				if (tempLine.startsWith("* [Previous") || tempLine.startsWith("* [CHG")) {
-					linesArr.push(tempLine);
-					foundBlank = false;
+					arrFileLines.push(tempLine);
+					swFoundBlank = false;
 				} else if (tempLine.length == 0) {
-					if (foundBlank == false) {
-						linesArr.push(tempLine);
-						foundBlank = true;
+					if (swFoundBlank == false) {
+						arrFileLines.push(tempLine);
+						swFoundBlank = true;
 					}
 				} else if (!tempLine.startsWith("* [Merge")) {
 					var starLoc = tempLine.indexOf("*");
 					tempLine = tempLine.substring(starLoc, tempLine.length);
-					linesArr.push(tempLine);
-					foundBlank = false;
+					arrFileLines.push(tempLine);
+					swFoundBlank = false;
 				} else if (tempLine.startsWith("* [Merge")) {
 					var urlLoc = tempLine.indexOf("http://gitlab.yrcw.com/mcc");
 					if (urlLoc > -1) {
@@ -970,10 +1190,10 @@ function Merge() {
 					}
 				}
 			}
-			if (linesArr.length == 0) {
+			if (arrFileLines.length == 0) {
 				document.getElementById("outputText").innerHTML = "There are no tickets on this list.";
 			} else {
-				document.getElementById("outputText").innerHTML = linesArr.join('<br/>');
+				document.getElementById("outputText").innerHTML = arrFileLines.join('<br/>');
 			}
 			document.getElementById("fileInput").style.display="none";
 			document.getElementById("fileInputLabel").style.display="none";
@@ -984,7 +1204,8 @@ function Merge() {
 	}
 }
 
-function ChangeTask() {
+// menu option Format List for Change Task
+function changeTask() {
 	resetScreen();
 	document.getElementById("fileInput").style.display="inline";
 	document.getElementById("fileInputLabel").style.display="inline";
@@ -1000,9 +1221,8 @@ function ChangeTask() {
 		reader.onload = (e) => {
 			var file = e.target.result; 
 			var lines = file.split(/\r\n|\n/);
-			var linesArr = new Array();
-			var ticketNumbers = new Array();
-			var foundBlank = false;
+			var arrFileLines = new Array();
+			var swFoundBlank = false;
 			for (var i = 0; i < lines.length; i++) {
 				var tempLine = lines[i];
 				var leftParen = tempLine.indexOf("(");
@@ -1011,20 +1231,20 @@ function ChangeTask() {
 				var rightBracket = tempLine.indexOf("]");
 				if (!tempLine.startsWith("* [Previous") && !tempLine.startsWith("* [CHG") && !tempLine.startsWith("* [Merge") && !tempLine.length == 0) {
 					if (tempLine.startsWith("**Production**")) {
-						linesArr.push("Production");
+						arrFileLines.push("Production");
 					} else if (tempLine.startsWith("**DevB**")) {
-						linesArr.push("");
-						linesArr.push("DevB");
+						arrFileLines.push("");
+						arrFileLines.push("DevB");
 					} else {
 						var mmpiLoc = tempLine.toUpperCase().indexOf("MMPI");
 						var m2jvLoc = tempLine.toUpperCase().indexOf("M2JV");
 						if (mmpiLoc < 0 && m2jvLoc < 0 && !tempLine.length == 0) {
 							tempLine = tempLine.substring(2, tempLine.length);
-							linesArr.push(tempLine);
+							arrFileLines.push(tempLine);
 						} else if (tempLine.length != 0) {
 							var ticketTitle = tempLine.substring(leftBracket+1, rightBracket);
 							tempLine = ticketTitle + tempLine.substring(rightParen+1, tempLine.length);
-							linesArr.push(tempLine);
+							arrFileLines.push(tempLine);
 						}
 					}
 				} else if (tempLine.startsWith("* [CHG")) {
@@ -1036,10 +1256,10 @@ function ChangeTask() {
 					}
 				}
 			}
-			if (linesArr.length == 0) {
+			if (arrFileLines.length == 0) {
 				document.getElementById("outputText").innerHTML = "There are no tickets on this list.";
 			} else {
-				document.getElementById("outputText").innerHTML = linesArr.join('<br/>');
+				document.getElementById("outputText").innerHTML = arrFileLines.join('<br/>');
 			}
 			document.getElementById("fileInput").style.display="none";
 			document.getElementById("fileInputLabel").style.display="none";
@@ -1050,7 +1270,8 @@ function ChangeTask() {
 	}
 }
 
-function Email() {
+// menu option Format List for Email
+function email() {
 	resetScreen();
 	document.getElementById("fileInput").style.display="inline";
 	document.getElementById("fileInputLabel").style.display="inline";
@@ -1067,11 +1288,11 @@ function Email() {
 			var file = e.target.result; 
 			var lines = file.split(/\r\n|\n/);
 			var dt = getThursday();
-			var linesArr = new Array();
-			linesArr.push("All,");
-			linesArr.push("");
-			linesArr.push("MCC Production will be updated Thursday " + dt + " at approximately 10:00 AM CDT");
-			linesArr.push("");
+			var arrFileLines = new Array();
+			arrFileLines.push("All,");
+			arrFileLines.push("");
+			arrFileLines.push("MCC Production will be updated Thursday " + dt + " at approximately 10:00 AM CDT");
+			arrFileLines.push("");
 			var bullet = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;•&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
 			for (var i = 0; i < lines.length; i++) {
 				var tempLine = lines[i];
@@ -1083,32 +1304,32 @@ function Email() {
 					var linkTitle = tempLine.substring(leftBracket+1, rightBracket);
 					var newLink = createLink(tempLine.substring(leftParen+1, rightParen), linkTitle);
 					tempLine = bullet + newLink;
-					linesArr.push(tempLine);
+					arrFileLines.push(tempLine);
 				} else if (tempLine.startsWith("* [Merge")) {
 					var linkTitle = tempLine.substring(leftBracket+1, rightBracket);
 					var newLink = createLink(tempLine.substring(leftParen+1, rightParen), linkTitle);
 					tempLine = bullet + newLink + tempLine.substring(rightParen+1, tempLine.length);
-					linesArr.push(tempLine);
+					arrFileLines.push(tempLine);
 				} else {
 					var mmpiLoc = tempLine.toUpperCase().indexOf("MMPI");
 					var m2jvLoc = tempLine.toUpperCase().indexOf("M2JV");
 					if (tempLine.startsWith("**DevB**")) {
 						break;
 					} else if (tempLine.startsWith("**Production**")) {
-						linesArr.push("");
-						linesArr.push("Production");
+						arrFileLines.push("");
+						arrFileLines.push("Production");
 					} else if (mmpiLoc < 0 && m2jvLoc < 0 && !tempLine.length == 0) {
 						tempLine = bullet + tempLine.substring(2, tempLine.length);
-						linesArr.push(tempLine);
+						arrFileLines.push(tempLine);
 					} else if (tempLine.length != 0) {
 						var ticketTitle = tempLine.substring(leftBracket+1, rightBracket);
 						var ticketLink = createLink(tempLine.substring(leftParen+1, rightParen), ticketTitle);
 						tempLine = bullet + ticketLink + tempLine.substring(rightParen+1, tempLine.length);
-						linesArr.push(tempLine);
+						arrFileLines.push(tempLine);
 					}
 				}
 			}
-			document.getElementById("outputText").innerHTML = linesArr.join('<br/>');
+			document.getElementById("outputText").innerHTML = arrFileLines.join('<br/>');
 			document.getElementById("emailButton").style.display="block";
 			document.getElementById("fileInput").style.display="none";
 			document.getElementById("fileInputLabel").style.display="none";
@@ -1119,12 +1340,14 @@ function Email() {
 	}
 }
 
+// remove event listeners for input file
 function removeListeners() {
 	var old_element = document.getElementById("fileInput");
 	var new_element = old_element.cloneNode(true);
 	old_element.parentNode.replaceChild(new_element, old_element);
 }
 
+// opens new email template for weekly deployment notification
 function sendEmail() {
 	var to = "ITModernizationNotifications@yrcw.com";
 	var cc = "YT_Solution_Services@yrcfreight.com";
@@ -1133,9 +1356,17 @@ function sendEmail() {
 	window.location.href = "mailto:" + to + "?cc=" + cc + "&subject=" + subject;
 }
 
+// return Thursday date of current week
 function getThursday() {
 	var date = new Date();
-	var diff = date.getDate() - date.getDay() + (date.getDay() === 0 ? -6 : 4);
+	var convertedDate = date.getDay() === 0 ? -6 : 4;
+	if (date.getDay() <= convertedDate) {
+		var diff = date.getDate() - date.getDay() + convertedDate;
+		swDeployNextWeek = false;
+	} else {
+		var diff = date.getDate() - date.getDay() + convertedDate + 7;
+		swDeployNextWeek = true;
+	}
 	var thursday = new Date(date.setDate(diff));
 	let year = thursday.getFullYear();
 	let month = (1 + thursday.getMonth()).toString().padStart(2, '0');
@@ -1143,10 +1374,17 @@ function getThursday() {
 	return month + '/' + day + '/' + year;
 }
 
+// display items upon page loading
 function screenLoad() {
-	document.getElementById("dateLabel").innerHTML = "This week's PROD deploy will be on " + getThursday();
+	var thursday = getThursday();
+	if (!swDeployNextWeek) {
+		document.getElementById("dateLabel").innerHTML = "This week's PROD deploy will be on " + thursday;
+	} else {
+		document.getElementById("dateLabel").innerHTML = "Next week's PROD deploy will be on " + thursday;
+	}
 }
 
+// opens email template to send feedback about tool
 function sendFeedback() {
 	if (confirm("\nClick OK below to open a new email.\n\nFeel free to share any feedback such as discovered bugs or suggestions for improvements.")) {
 		var to = "jesse.nickchen@yrcw.com";
@@ -1158,6 +1396,7 @@ function sendFeedback() {
 	}
 }
 
+// displays all elements of specified class
 function showClass(className) {
 	var x = document.getElementsByClassName(className);
 	var i;
@@ -1166,6 +1405,7 @@ function showClass(className) {
 	}
 }
 
+// hides all elements of specified class
 function hideClass(className) {
 	var x = document.getElementsByClassName(className);
 	var i;
@@ -1174,6 +1414,7 @@ function hideClass(className) {
 	}
 }
 
+// returns clickable link from input URL
 function createLink(url, title) {
 	return "<a href=\"" + url + "\" target=\"_blank\">" + title + "</a>";
 }

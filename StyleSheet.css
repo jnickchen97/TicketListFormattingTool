@@ -302,3 +302,7 @@ li a:hover, li span:hover {
 .prodCheckboxes {
 	display: block;
 }
+
+#newListSpacing {
+	display: none;
+}
