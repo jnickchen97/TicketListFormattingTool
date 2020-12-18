@@ -208,6 +208,7 @@ function jenkins() {
 	document.getElementById("optionLabel").innerHTML = "Get New DevB Tickets from Jenkins";
 	arrFormattedJenkinsTickets = new Array();
 	if (!swAddTicketsToNewList) {
+		newListBuilder = "";
 		document.getElementById("optionLabel").innerHTML += "<br><br><br><br>Please select the file for your current ticket list below.";
 		document.getElementById("fileInput").style.display="inline";
 		document.getElementById("fileInputLabel").style.display="inline";
@@ -589,7 +590,8 @@ async function processLines() {
 		} else {
 			document.getElementById("fileInput").style.display="none";
 			document.getElementById("fileInputLabel").style.display="none";
-			document.getElementById("optionLabel").innerHTML = "No new tickets were found on this list.";
+			document.getElementById("affectsProdBtn").style.display = "block";
+			document.getElementById("optionLabel").innerHTML = "No items were found with ticket numbers.<br><br>Click done to continue.";
 		}
 	}
 }
@@ -792,7 +794,7 @@ function markProdMessages() {
 			document.getElementById("outputText").innerHTML = arrExistingHeadings.join('<br>') + "<br><br>" + arrTicketsMarkedBlockers.join('<br/>') + arrExistingFoundProd.join('<br>') +
 				"<br><br>**DevB**" + devbSpacing + arrNotCheckedAsProd.join('<br>') + "<br>" + arrExistingDevbTickets.join('<br>');
 			if (arrCheckProdNoTicket.length > 0) {
-				document.getElementById("outputText").innerHTML += "<br><br><br><br>" + arrCheckProdNoTicket.join('\n');
+				document.getElementById("outputText").innerHTML += "<br><br><br><br>" + arrCheckProdNoTicket.join('<br/>');
 			}
 		} else if (swCheckProd && swAddTicketsFromJenkins) {
 			var devbSpacing = "<br>";
@@ -821,7 +823,7 @@ function markProdMessages() {
 						document.getElementById("outputText").innerHTML += "<br><br>";
 					}
 				}
-				document.getElementById("outputText").innerHTML += arrCheckProdNoTicket.join('\n');
+				document.getElementById("outputText").innerHTML += arrCheckProdNoTicket.join('<br/>');
 			}
 		} else if (!swCheckProd) {
 			document.getElementById("optionLabel").innerHTML = "Production tickets that have a status other than Done have been marked with an \"X\"";
