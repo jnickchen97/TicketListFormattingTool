@@ -337,6 +337,7 @@ function jenkinsFormat() {
 	var arrFileLines = new Array();
 	var lines = document.getElementById("JenkinsText").value.split(/\r\n|\n/);
 	var allText = document.getElementById("JenkinsText").value;
+	var addTicketsNewBuild = "";
 	
 	if (allText.length != 0) {
 		for (var i = 0; i < lines.length; i++) {
@@ -347,6 +348,9 @@ function jenkinsFormat() {
 				var swInDevelopBuild = false;
 				if (developBuild > -1) {
 					swInDevelopBuild = true;
+					if (addTicketsNewBuild.length == 0) {
+						addTicketsNewBuild = tempLine.substring(tempLine.indexOf("#")+1, developBuild-1);
+					}
 				}
 			}
 			if (tempLine.length != 0 && tempLine !== "Changes" && swInDevelopBuild && anyBuild < 0) {
@@ -361,6 +365,10 @@ function jenkinsFormat() {
 				if (!swAddTicketsToNewList) {
 					devbSpacing5 = "<br><br>";
 					devbSpacing6 = "";
+					var firstHeading = arrExistingHeadings[0];
+					var firstHeadingFirstHalf = firstHeading.indexOf("...") + 3;
+					firstHeading = firstHeading.substring(0, firstHeadingFirstHalf) + addTicketsNewBuild + " )";
+					arrExistingHeadings[0] = firstHeading;
 				}
 				document.getElementById("optionLabel").innerHTML = "New tickets have been formatted and added to the end of the list.";
 				document.getElementById("outputText").innerHTML = arrExistingHeadings.join('<br>') + newListBuilder.split('\n').join('<br>') + devbSpacing5 + "**Production**<br>" + devbSpacing6 +
