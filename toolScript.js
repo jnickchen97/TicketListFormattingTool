@@ -44,6 +44,7 @@ function resetScreen() {
 	hideClass("JenkinsAll");
 	document.getElementById("JenkinsButton").style.display="none";
 	document.getElementById("JenkinsLink").style.display="none";
+	document.getElementById("JenkinsOldBuild").style.display="none";
 	document.getElementById("JenkinsText").value = "";
 	document.getElementById("fileInput").style.display="none";
 	document.getElementById("fileInputLabel").style.display="none";
@@ -269,6 +270,7 @@ function jenkins() {
 		arrFormattedJenkinsTickets = newListBuilder.split(/\r\n|\n/);
 		document.getElementById("JenkinsButton").style.display="inline-block";
 		document.getElementById("JenkinsLink").style.display="inline-block";
+		document.getElementById("JenkinsOldBuild").style.display="inline-block";
 		document.getElementById("JenkinsText").focus();
 		document.getElementById("alsoAffectsProd").style.display="inline-block";
 		document.getElementById("alsoAffectsProdLabel").style.display="inline-block";
@@ -303,6 +305,12 @@ function toJenkinsChanges() {
 	document.getElementById("JenkinsText").focus();
 }
 
+// goes to Gitlab to search for old builds when button is clicked
+function toOldBuild() {
+	navigate('http://gitlab.yrcw.com/mcc/environment/mcc-environment-prod/merge_requests?scope=all&search=devb&state=merged', true);
+	document.getElementById("JenkinsText").focus();
+}
+
 // opens input URL in new tab
 function navigate(href, newTab) {
 	var a = document.createElement('a');
@@ -318,6 +326,7 @@ function jenkinsFormat() {
 	hideClass("JenkinsAll");
 	document.getElementById("JenkinsButton").style.display="none";
 	document.getElementById("JenkinsLink").style.display="none";
+	document.getElementById("JenkinsOldBuild").style.display="none";
 	document.getElementById("alsoAffectsProd").style.display="none";
 	document.getElementById("alsoAffectsProdLabel").style.display="none";
 	
