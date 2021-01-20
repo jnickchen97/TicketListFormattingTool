@@ -2,6 +2,7 @@
 var input = document.getElementById("fileInput");
 
 // string variables
+var addTicketsNewBuild = "";
 var JiraTicketResponse = "";
 var m2jvTicket = "";
 var mmpiTicket = "";
@@ -337,7 +338,7 @@ function jenkinsFormat() {
 	var arrFileLines = new Array();
 	var lines = document.getElementById("JenkinsText").value.split(/\r\n|\n/);
 	var allText = document.getElementById("JenkinsText").value;
-	var addTicketsNewBuild = "";
+	addTicketsNewBuild = "";
 	
 	if (allText.length != 0) {
 		for (var i = 0; i < lines.length; i++) {
@@ -545,7 +546,15 @@ async function processLines() {
 			swFoundProd = false;
 		}
 		if (i < 3) {
-			arrExistingHeadings.push(tempLine);
+			if (i == 0 && addTicketsNewBuild.length > 0) {
+				var firstHeading = tempLine;
+				var firstHeadingFirstHalf = firstHeading.indexOf("...") + 3;
+				firstHeading = firstHeading.substring(0, firstHeadingFirstHalf) + addTicketsNewBuild + " )";
+				addTicketsNewBuild = "";
+				arrExistingHeadings.push(firstHeading);
+			} else {
+				arrExistingHeadings.push(tempLine);
+			}
 		}
 		if (swFoundProd && tempLine.indexOf("*") > -1 && !tempLine.startsWith("**Production**")) {
 			arrExistingFoundProd.push(tempLine);
