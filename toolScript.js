@@ -20,6 +20,7 @@ var swFoundProdSection = false;
 var swFoundswFoundProd = false;
 var swMarkBlockersAfterAffectsProd = false;
 var swDeployNextWeek = false;
+var swDeployFriday = false;
 
 // array variables
 var arrAllJenkinsTickets;
@@ -194,7 +195,13 @@ function downloadList() {
 	var blob = new Blob([newListBuilder], {
 		type: "text/plain;charset=utf-8"
 	});
-	var deployDate = getThursday().replace("/", "");
+	if (swDeployFriday && !swDeployNextWeek) {
+		var deployDate = getFriday().replace("/", "");
+	} else if (swDeployFriday && swDeployNextWeek) {
+		var deployDate = getTuesday().replace("/", "");
+	} else {
+		var deployDate = getTuesday().replace("/", "");
+	}
 	deployDate = deployDate.replace("/", "");
 	deployDate = "prod_deploy_" + deployDate + ".txt";
 	saveAs(blob, deployDate);
@@ -1315,11 +1322,15 @@ function email() {
 		reader.onload = (e) => {
 			var file = e.target.result; 
 			var lines = file.split(/\r\n|\n/);
-			var dt = getThursday();
+			var dt = getFriday();
 			var arrFileLines = new Array();
 			arrFileLines.push("All,");
 			arrFileLines.push("");
-			arrFileLines.push("MCC Production will be updated Thursday " + dt + " at approximately 10:00 AM CDT");
+			if (swDeployFriday) {
+				arrFileLines.push("MCC Production will be updated Friday " + dt + " at approximately 10:00 AM CDT");
+			} else {
+				arrFileLines.push("MCC Production will be updated Tuesday " + dt + " at approximately 10:00 AM CDT");
+			}
 			arrFileLines.push("");
 			var bullet = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;•&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
 			for (var i = 0; i < lines.length; i++) {
@@ -1375,40 +1386,60 @@ function removeListeners() {
 	old_element.parentNode.replaceChild(new_element, old_element);
 }
 
-// opens new email template for weekly deployment notification
+// opens new email template for deployment notification
 function sendEmail() {
 	var to = "ITModernizationNotifications@yrcw.com";
 	var cc = "YT_Solution_Services@yrcfreight.com";
-	var subject = "Weekly MCC Production Deployment";
+	var subject = "MCC Production Deployment";
 	var screenOutput = document.getElementById("outputText").innerHTML;
 	window.location.href = "mailto:" + to + "?cc=" + cc + "&subject=" + subject;
 }
 
-// return Thursday date of current week
-function getThursday() {
+// return Tuesday date of current week
+function getTuesday() {
 	var date = new Date();
-	var convertedDate = date.getDay() === 0 ? -6 : 4;
-	if (date.getDay() <= convertedDate) {
+	var convertedDate = date.getDay() === 0 ? -6 : 2;
+	if (swDeployNextWeek == false) {
+		var diff = date.getDate() - date.getDay() + convertedDate;
+	} else {
+		var diff = date.getDate() - date.getDay() + convertedDate + 7;
+	}
+	if (date.getDay() > convertedDate) {
+		swDeployFriday = true;
+	}
+	var tuesday = new Date(date.setDate(diff));
+	let year = tuesday.getFullYear();
+	let month = (1 + tuesday.getMonth()).toString().padStart(2, '0');
+	let day = tuesday.getDate().toString().padStart(2, '0');
+	return month + '/' + day + '/' + year;
+}
+
+// return Friday date of current week
+function getFriday() {
+	var date = new Date();
+	var convertedDate = date.getDay() === 0 ? -6 : 5;
+	if (date.getDay() < convertedDate) {
 		var diff = date.getDate() - date.getDay() + convertedDate;
 		swDeployNextWeek = false;
 	} else {
 		var diff = date.getDate() - date.getDay() + convertedDate + 7;
 		swDeployNextWeek = true;
 	}
-	var thursday = new Date(date.setDate(diff));
-	let year = thursday.getFullYear();
-	let month = (1 + thursday.getMonth()).toString().padStart(2, '0');
-	let day = thursday.getDate().toString().padStart(2, '0');
+	var friday = new Date(date.setDate(diff));
+	let year = friday.getFullYear();
+	let month = (1 + friday.getMonth()).toString().padStart(2, '0');
+	let day = friday.getDate().toString().padStart(2, '0');
 	return month + '/' + day + '/' + year;
 }
 
 // display items upon page loading
 function screenLoad() {
-	var thursday = getThursday();
+	var friday = getFriday();
+	var tuesday = getTuesday();
 	if (!swDeployNextWeek) {
-		document.getElementById("dateLabel").innerHTML = "This week's PROD deploy will be on " + thursday;
+		document.getElementById("dateLabel").innerHTML = "This week's PROD deploys will be on " + tuesday + " (Tuesday) and " + friday + " (Friday)";
 	} else {
-		document.getElementById("dateLabel").innerHTML = "Next week's PROD deploy will be on " + thursday;
+		document.getElementById("dateLabel").innerHTML = "Next week's PROD deploys will be on " + tuesday + " (Tuesday) and " + friday + " (Friday)";
 	}
 }
 
