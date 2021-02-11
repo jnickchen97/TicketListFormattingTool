@@ -197,8 +197,6 @@ function downloadList() {
 	});
 	if (swDeployThursday && !swDeployNextWeek) {
 		var deployDate = getThursday().replace("/", "");
-	} else if (swDeployThursday && swDeployNextWeek) {
-		var deployDate = getTuesday().replace("/", "");
 	} else {
 		var deployDate = getTuesday().replace("/", "");
 	}
@@ -998,8 +996,7 @@ async function getTicketStatus(ticketUrl) {
 		redirect: 'follow'
 	};
 
-	var wholeUrl = "https://cors-anywhere.herokuapp.com/" + ticketUrl;
-	const response = await fetch(wholeUrl, requestOptions)
+	const response = await fetch(ticketUrl, requestOptions)
 		.then(async function(response) {
 			if(response.status!==200) {
 				throw new Error(response.status)
@@ -1325,7 +1322,7 @@ function email() {
 			var arrFileLines = new Array();
 			arrFileLines.push("All,");
 			arrFileLines.push("");
-			if (swDeployThursday) {
+			if (swDeployThursday && !swDeployNextWeek) {
 				var dt = getThursday();
 				arrFileLines.push("MCC Production will be updated Thursday " + dt + " at approximately 10:00 AM CDT");
 			} else {
