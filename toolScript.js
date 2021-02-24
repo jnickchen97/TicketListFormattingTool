@@ -989,14 +989,16 @@ async function getTicketStatus(ticketUrl) {
 	var separator = ":";
 	var wholeAuthorization = "Basic " + btoa(user + separator + pwd);
 	myHeaders.append("Authorization", wholeAuthorization);
+	myHeaders.append("Origin", "*");
 
 	var requestOptions = {
 		method: 'GET',
 		headers: myHeaders,
-		redirect: 'follow'
+		redirect: 'manual'
 	};
 
-	const response = await fetch(ticketUrl, requestOptions)
+	var wholeUrl = "https://jesse-cors-proxy.herokuapp.com/" + ticketUrl;
+	const response = await fetch(wholeUrl, requestOptions)
 		.then(async function(response) {
 			if(response.status!==200) {
 				throw new Error(response.status)
