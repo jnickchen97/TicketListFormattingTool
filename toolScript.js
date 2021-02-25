@@ -594,6 +594,15 @@ async function processLines() {
 						} else {
 							arrMergeReqLinks.push(JiraUrl);
 						}
+						var jiraTitleLoc = ticketResponse.indexOf("data-wrm-key=\"jira.heritage\" data-wrm-batch-type=\"context\" data-initially-rendered></script>");
+						if (jiraTitleLoc > -1) {
+							var jiraTitle = ticketResponse.substring(jiraTitleLoc+100, jiraTitleLoc+500);
+							var titleStartLoc = jiraTitle.indexOf("]");
+							var titleEndLoc = jiraTitle.indexOf("- JIRA");
+							jiraTitle = jiraTitle.substring(titleStartLoc+2, titleEndLoc-1);
+							var dashLoc = tempLine.indexOf(" — ");
+							tempLine = tempLine.substring(0, rightParen+2) + jiraTitle + tempLine.substring(dashLoc, tempLine.length);
+						}
 						arrCheckFoundProd.push(tempLine);
 					} else {
 						alert("\nError - something went wrong.");
