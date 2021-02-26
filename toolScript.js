@@ -1455,7 +1455,7 @@ function screenLoad() {
 // opens email template to send feedback about tool
 function sendFeedback() {
 	if (confirm("\nClick OK below to open a new email.\n\nFeel free to share any feedback such as discovered bugs or suggestions for improvements.")) {
-		var to = "jesse.nickchen@yrcw.com";
+		var to = "jesse.nickchen@myyellow.com";
 		var subject = "Ticket List Formatting Tool Feedback";
 		window.location.href = "mailto:" + to + "?subject=" + subject;
 	} else {
