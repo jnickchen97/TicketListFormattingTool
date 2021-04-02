@@ -1399,7 +1399,7 @@ function removeListeners() {
 function sendEmail() {
 	var to = "ITModernizationNotifications@yrcw.com";
 	var cc = "YT_Solution_Services@yrcfreight.com";
-	var subject = "Bi-Weekly MCC Production Deployment";
+	var subject = "MCC Production Deployment";
 	var screenOutput = document.getElementById("outputText").innerHTML;
 	window.location.href = "mailto:" + to + "?cc=" + cc + "&subject=" + subject;
 }
