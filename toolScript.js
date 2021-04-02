@@ -585,7 +585,7 @@ async function processLines() {
 					document.getElementById("loaderLabel").style.display="none";
 					document.getElementById("loader").style.display="none";
 					if (ticketResponse !== "error") {
-						var mergeReqUrlLoc = ticketResponse.indexOf("href=\"http://gitlab.yrcw.com/mcc/app/mcc-modules/merge_requests/");
+						var mergeReqUrlLoc = ticketResponse.lastIndexOf("href=\"http://gitlab.yrcw.com/mcc/app/mcc-modules/merge_requests/");
 						if (mergeReqUrlLoc > -1) {
 							var mergeReqUrl = ticketResponse.substring(mergeReqUrlLoc+6, mergeReqUrlLoc+75);
 							var quoteLoc = mergeReqUrl.indexOf("\"");
