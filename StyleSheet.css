@@ -195,7 +195,7 @@ li a:hover, li span:hover {
 	margin-top: 0px;
 }
 
-.newList, .alsoBlockers, .alsoProd {
+.newList, .alsoBlockers, .alsoProd, .oopEmailToo {
 	display: none;
 	margin-top: 0px;
 }

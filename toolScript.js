@@ -15,6 +15,7 @@ var swAddTicketsFromJenkins = false;
 var swAddTicketsToNewList = false;
 var swCheckNewTicketsAffectProd = false;
 var swCheckProd = false;
+var swError404 = false;
 var swFoundDupTicket = false;
 var swFoundProdSection = false;
 var swFoundswFoundProd = false;
@@ -57,6 +58,9 @@ function resetScreen() {
 	document.getElementById("newMergeRequest").style.display="none";
 	document.getElementById("goToChangeRequest").style.display="none";
 	document.getElementById("newChangeRequest").style.display="none";
+	document.getElementById("oopEmail").style.display="none";
+	document.getElementById("oopEmail").checked = false;
+	document.getElementById("oopEmailLabel").style.display="none";
 	document.getElementById("emailButton").style.display="none";
 	document.getElementById("outputText").innerHTML = "";
 	hideClass("loginInput");
@@ -585,7 +589,7 @@ async function processLines() {
 					document.getElementById("loaderLabel").style.display="none";
 					document.getElementById("loader").style.display="none";
 					if (ticketResponse !== "error") {
-						var mergeReqUrlLoc = ticketResponse.indexOf("href=\"http://gitlab.yrcw.com/mcc/app/mcc-modules/merge_requests/");
+						var mergeReqUrlLoc = ticketResponse.lastIndexOf("href=\"http://gitlab.yrcw.com/mcc/app/mcc-modules/merge_requests/");
 						if (mergeReqUrlLoc > -1) {
 							var mergeReqUrl = ticketResponse.substring(mergeReqUrlLoc+6, mergeReqUrlLoc+75);
 							var quoteLoc = mergeReqUrl.indexOf("\"");
@@ -605,8 +609,12 @@ async function processLines() {
 						}
 						arrCheckFoundProd.push(tempLine);
 					} else {
-						alert("\nError - something went wrong.");
-						break;
+						if (swError404) {
+							arrCheckProdNoTicket.push(tempLine);
+						} else {
+							alert("\nError - something went wrong.");
+							break;
+						}
 					}
 				} else {
 					arrCheckProdNoTicket.push(tempLine);
@@ -614,7 +622,7 @@ async function processLines() {
 			}
 		}
 	}
-	if (ticketResponse === "error") {
+	if (ticketResponse === "error" && !swError404) {
 		document.getElementById("optionLabel").innerHTML = "Error";
 		document.getElementById("outputText").style.textAlign = "center";
 		document.getElementById("outputText").innerHTML = "Please make sure you are entering the correct email address and API token for your Jira account.<br><br>" +
@@ -994,6 +1002,7 @@ async function getTicketStatus(ticketUrl) {
 	document.getElementById("fileInputLabel").style.display="none";
 	document.getElementById("loaderLabel").style.display="block";
 	document.getElementById("loader").style.display="block";
+	swError404 = false;
 	var myHeaders = new Headers();
 	var separator = ":";
 	var wholeAuthorization = "Basic " + btoa(user + separator + pwd);
@@ -1010,6 +1019,9 @@ async function getTicketStatus(ticketUrl) {
 	const response = await fetch(wholeUrl, requestOptions)
 		.then(async function(response) {
 			if(response.status!==200) {
+				if (response.status==404) {
+					swError404 = true;
+				}
 				throw new Error(response.status)
 			} else {
 				const JiraResponse = await response.text();
@@ -1378,6 +1390,9 @@ function email() {
 				}
 			}
 			document.getElementById("outputText").innerHTML = arrFileLines.join('<br/>');
+			document.getElementById("oopEmail").style.display="inline-block";
+			document.getElementById("oopEmailLabel").style.display="inline-block";
+			document.getElementById("oopEmailLabel").style.paddingTop="30px";
 			document.getElementById("emailButton").style.display="block";
 			document.getElementById("fileInput").style.display="none";
 			document.getElementById("fileInputLabel").style.display="none";
@@ -1400,6 +1415,10 @@ function sendEmail() {
 	var to = "ITModernizationNotifications@yrcw.com";
 	var cc = "YT_Solution_Services@yrcfreight.com";
 	var subject = "MCC Production Deployment";
+	if (document.getElementById("oopEmail").checked == true) {
+		to += ";Gavin.Clyma@myYellow.com;Doug.Deppen@myYellow.com;Joanna.Rench@myYellow.com;Rob.Pendergast@myYellow.com;Tony.Thompson@myYellow.com;Derrin.Holloway@myYellow.com;theresa.bashore@myYellow.com";
+		subject += " (OOP)";
+	}
 	var screenOutput = document.getElementById("outputText").innerHTML;
 	window.location.href = "mailto:" + to + "?cc=" + cc + "&subject=" + subject;
 }
