@@ -589,7 +589,7 @@ async function processLines() {
 					document.getElementById("loaderLabel").style.display="none";
 					document.getElementById("loader").style.display="none";
 					if (ticketResponse !== "error") {
-						var mergeReqUrlLoc = ticketResponse.lastIndexOf("href=\"http://gitlab.yrcw.com/mcc/app/mcc-modules/merge_requests/");
+						var mergeReqUrlLoc = ticketResponse.indexOf("href=\"http://gitlab.yrcw.com/mcc/app/mcc-modules/merge_requests/");
 						if (mergeReqUrlLoc > -1) {
 							var mergeReqUrl = ticketResponse.substring(mergeReqUrlLoc+6, mergeReqUrlLoc+75);
 							var quoteLoc = mergeReqUrl.indexOf("\"");
@@ -1064,7 +1064,7 @@ function checkBlockers() {
 				if (swFoundProd) {
 					if (tempLine.startsWith("X")) {
 						tempLine = tempLine.substring(2, tempLine.length);
-						var ticketUrlLoc = tempLine.lastIndexOf("https://yrcfreight.atlassian.net/browse");
+						var ticketUrlLoc = tempLine.indexOf("https://yrcfreight.atlassian.net/browse");
 						var rightParen = tempLine.indexOf(")");
 						if (ticketUrlLoc > -1) {
 							var JiraUrl = tempLine.substring(ticketUrlLoc, rightParen-1);
