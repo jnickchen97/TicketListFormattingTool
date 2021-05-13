@@ -1064,7 +1064,7 @@ function checkBlockers() {
 				if (swFoundProd) {
 					if (tempLine.startsWith("X")) {
 						tempLine = tempLine.substring(2, tempLine.length);
-						var ticketUrlLoc = tempLine.indexOf("https://yrcfreight.atlassian.net/browse");
+						var ticketUrlLoc = tempLine.lastIndexOf("https://yrcfreight.atlassian.net/browse");
 						var rightParen = tempLine.indexOf(")");
 						if (ticketUrlLoc > -1) {
 							var JiraUrl = tempLine.substring(ticketUrlLoc, rightParen-1);
