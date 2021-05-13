@@ -693,6 +693,7 @@ function addTable(MergeRequests, JiraTickets) {
 				td.style.textAlign = "left";
 				if (swNoMerge) {
 					const anchor = document.createElement('a');
+					anchor.className = 'linksToChangeColor';
 					anchor.href = "http://gitlab.yrcw.com/mcc/app/mcc-modules/merge_requests?scope=all&state=merged";
 					anchor.innerText = "None found, search here";
 					anchor.target = "_blank";
@@ -707,12 +708,14 @@ function addTable(MergeRequests, JiraTickets) {
 						currentMerge = currentMerge.substring(m2jvTitleLoc, currentMerge.length);
 					}
 					var ticketNum = currentMerge.substring(currentMerge.indexOf("-")+1, currentMerge.length);
+					anchor.className = 'linksToChangeColor';
 					anchor.href = "http://gitlab.yrcw.com/mcc/app/mcc-modules/merge_requests?scope=all&utf8=%E2%9C%93&state=merged&search=" + ticketNum;
 					anchor.innerText = "None found, search here";
 					anchor.target = "_blank";
 					td.appendChild(anchor);
 				} else {
 					const anchor = document.createElement('a');
+					anchor.className = 'linksToChangeColor';
 					anchor.href = currentMerge + "/diffs";
 					anchor.innerText = "Merge Request !" + currentMerge.substring(currentMerge.indexOf("merge_requests/")+15, currentMerge.length);
 					anchor.target = "_blank";
@@ -726,6 +729,14 @@ function addTable(MergeRequests, JiraTickets) {
 		}
 	}
 	myTableDiv.appendChild(table);
+	var links = document.getElementsByClassName("linksToChangeColor");
+	for (var i = 0; i < links.length; i++) {
+		links[i].addEventListener('click', changeLinkColor);
+	}
+}
+
+function changeLinkColor(e) {
+	e.target.style.color = 'red';
 }
 
 // runs after done button is clicked to check if changes affect prod
