@@ -1184,8 +1184,8 @@ async function sendValidationEmail() {
 		var firstName = tempName.substring(0, tempName.indexOf(" "));
 		var lastName = tempName.substring(tempName.lastIndexOf(" ") + 1, tempName.length);
 		if (tempName.indexOf(" ") < 0) {
-			firstName = tempName.substring(0, tempName.indexOf("."));
-			lastName = tempName.substring(tempName.indexOf(".") + 1, tempName.indexOf("@"));
+			firstName = tempName.substring(0, 1).toUpperCase() + tempName.substring(1, tempName.indexOf("."));
+			lastName = tempName.substring(tempName.indexOf(".") + 1, tempName.indexOf(".") + 2).toUpperCase() + tempName.substring(tempName.indexOf(".") + 2, tempName.indexOf("@"));
 		}
 		var ticketTitle = arrBlockerNamesAndTickets[i][1];
 		var ticketNum = arrBlockerNamesAndTickets[i][2];
