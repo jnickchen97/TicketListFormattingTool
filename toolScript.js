@@ -142,6 +142,7 @@ function newChangeRequest() {
 // menu option Create New Ticket List
 function newList() {
 	resetScreen();
+	swCheckNewTicketsAffectProd = false;
 	resetTicketArrays();
 	newListBuilder = "";
 	swAddTicketsToNewList = false;
@@ -897,6 +898,7 @@ function markProdMessages() {
 // menu option Mark All Prod Blockers
 function markBlockers() {
 	resetScreen();
+	swCheckNewTicketsAffectProd = false;
 	document.getElementById("optionLabel").innerHTML = "Mark All Prod Blockers";
 	displayLogin();
 	swMarkBlockersAfterAffectsProd = true;
@@ -1050,6 +1052,7 @@ async function getTicketStatus(ticketUrl) {
 // menu option Check Blockers for Validation
 function checkBlockers() {
 	resetScreen();
+	swCheckNewTicketsAffectProd = false;
 	document.getElementById("optionLabel").innerHTML = "Check Blockers for Validation";
 	displayLogin();
 	
@@ -1211,6 +1214,7 @@ async function sendValidationEmail() {
 // menu option Add "PROD" Label to Tickets
 function addProdLabel() {
 	resetScreen();
+	swCheckNewTicketsAffectProd = false;
 	document.getElementById("fileInput").style.display="inline";
 	document.getElementById("fileInputLabel").style.display="inline";
 	document.getElementById("optionLabel").innerHTML = "Add \"PROD\" Label to Tickets";
@@ -1283,6 +1287,7 @@ function markLabel(tempLine, checkIfProd) {
 // menu option Format List for Merge Request
 function merge() {
 	resetScreen();
+	swCheckNewTicketsAffectProd = false;
 	document.getElementById("fileInput").style.display="inline";
 	document.getElementById("fileInputLabel").style.display="inline";
 	document.getElementById("optionLabel").innerHTML = "Format List for Merge Request";
@@ -1341,6 +1346,7 @@ function merge() {
 // menu option Format List for Change Task
 function changeTask() {
 	resetScreen();
+	swCheckNewTicketsAffectProd = false;
 	document.getElementById("fileInput").style.display="inline";
 	document.getElementById("fileInputLabel").style.display="inline";
 	document.getElementById("optionLabel").innerHTML = "Format List for Change Task";
@@ -1407,6 +1413,7 @@ function changeTask() {
 // menu option Format List for Email
 function email() {
 	resetScreen();
+	swCheckNewTicketsAffectProd = false;
 	document.getElementById("fileInput").style.display="inline";
 	document.getElementById("fileInputLabel").style.display="inline";
 	document.getElementById("optionLabel").innerHTML = "Format Existing List for Email";
