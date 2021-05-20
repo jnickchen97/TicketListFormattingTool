@@ -9,6 +9,7 @@ var mmpiTicket = "";
 var newListBuilder = "";
 var pwd = "";
 var user = "";
+var bullet = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;•&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
 
 // boolean variables
 var swAddTicketsFromJenkins = false;
@@ -25,6 +26,7 @@ var swDeployThursday = false;
 
 // array variables
 var arrAllJenkinsTickets;
+var arrBlockerNamesAndTickets;
 var arrCheckAffectsFoundProd;
 var arrCheckFoundProd;
 var arrCheckProdNoTicket;
@@ -92,6 +94,7 @@ function resetScreen() {
 	document.getElementById("alsoAffectsProd").checked = false;
 	document.getElementById("affectsProdBtn").style.display = "none";
 	hideClass("newListSpacing");
+	document.getElementById("validationEmailButton").style.display="none";
 }
 
 // toggle help menu open or closed
@@ -1063,6 +1066,7 @@ function checkBlockers() {
 			var arrFileLines = new Array();
 			var arrBlockerTicketNums = new Array();
 			var arrBlockerTicketLinks = new Array();
+			arrBlockerNamesAndTickets = new Array();
 			var validatedCount = 0;
 			var swFoundProd = false;
 			for (var i = 0; i < lines.length; i++) {
@@ -1093,6 +1097,20 @@ function checkBlockers() {
 									tempLine = "X " + tempLine;
 									arrBlockerTicketNums.push(ticketNum);
 									arrBlockerTicketLinks.push(JiraUrl);
+									if (ticketStatus.toUpperCase() === "PROMOTED" || ticketStatus.toUpperCase() === "VALIDATE") {
+										// save names for validation email
+										var reporterEndLoc = ticketResponse.indexOf("- edit Reporter");
+										var reporterName = ticketResponse.substring(reporterEndLoc - 50, reporterEndLoc);
+										var reporterStartLoc = reporterName.indexOf("aria-label=");
+										reporterName = reporterName.substring(reporterStartLoc + 12, reporterName.length);
+										var ticketTitleLoc = ticketResponse.indexOf("data-wrm-key=\"jira.heritage\" data-wrm-batch-type=\"context\" data-initially-rendered></script>");
+										var ticketTitle = ticketResponse.substring(ticketTitleLoc + 100, ticketTitleLoc + 500);
+										var titleStartLoc = ticketTitle.indexOf("]");
+										var titleEndLoc = ticketTitle.indexOf("- JIRA");
+										ticketTitle = ticketTitle.substring(titleStartLoc + 2, titleEndLoc - 1);
+										var arrNameAndTicket = [reporterName, ticketTitle, ticketNum, JiraUrl];
+										arrBlockerNamesAndTickets.push(arrNameAndTicket);
+									}
 								}
 								arrFileLines.push(tempLine);
 							} else {
@@ -1127,6 +1145,7 @@ function checkBlockers() {
 					document.getElementById("outputText").innerHTML += arrBlockersOutput.join('<br/>');
 					document.getElementById("outputText").innerHTML += "<br/><br/><br/>";
 					document.getElementById("outputText").innerHTML += arrFileLines.join('<br/>');
+					document.getElementById("validationEmailButton").style.display="block";
 				} else {
 					document.getElementById("fileInput").style.display="none";
 					document.getElementById("fileInputLabel").style.display="none";
@@ -1138,6 +1157,55 @@ function checkBlockers() {
 		reader.onerror = (e) => alert(e.target.error.name); 
 		reader.readAsText(file); 
 	}
+}
+
+// send email to the reporter on blocker tickets
+async function sendValidationEmail() {
+	resetScreen();
+	var to = "";
+	var cc = "Jessie.Ferguson@myYellow.com;Jesse.Nickchen@myYellow.com;Todd.Moore@myYellow.com;Ryan.Dorner@myYellow.com;Colston.Erwin@myYellow.com";
+	var subject = "Jira Tickets Blocking MCC-Prod Deploy";
+	
+	var arrEmailMessage = new Array();
+	arrEmailMessage.push("All,");
+	arrEmailMessage.push("");
+	arrEmailMessage.push("You are receiving this email because you are the reporter for a Jira ticket with a status of <i>Promoted</i> or <i>Validate</i>.");
+	arrEmailMessage.push("");
+	arrEmailMessage.push("The program(s) being changed for this ticket are enabled in MCC-Prod, so until this ticket is validated it is blocking the next production deployment.");
+	arrEmailMessage.push("Below is the list of tickets that need to be validated, along with the reporter's name");
+	arrEmailMessage.push("");
+	arrEmailMessage.push("For each ticket by your name, please either test the relevant changes yourself or reach out to somebody who can test them.");
+	arrEmailMessage.push("Any of these tickets that cannot be validated by the time of the next deployment will need to be reverted from DevB.");
+	arrEmailMessage.push("");
+	arrEmailMessage.push("Tickets");
+	
+	for (var i = 0; i < arrBlockerNamesAndTickets.length; i++) {
+		var tempName = arrBlockerNamesAndTickets[i][0];
+		var firstName = tempName.substring(0, tempName.indexOf(" "));
+		var lastName = tempName.substring(tempName.lastIndexOf(" ") + 1, tempName.length);
+		if (tempName.indexOf(" ") < 0) {
+			firstName = tempName.substring(0, tempName.indexOf("."));
+			lastName = tempName.substring(tempName.indexOf(".") + 1, tempName.indexOf("@"));
+		}
+		var ticketTitle = arrBlockerNamesAndTickets[i][1];
+		var ticketNum = arrBlockerNamesAndTickets[i][2];
+		var ticketUrl = arrBlockerNamesAndTickets[i][3];
+		arrEmailMessage.push(bullet + firstName + " " + lastName + ": " + createLink(ticketUrl, ticketNum) + " - " + ticketTitle);
+		var wholeEmail = firstName + "." + lastName + "@myYellow.com";
+		if (to.length == 0) {
+			to = wholeEmail;
+		} else {
+			if (to.indexOf(wholeEmail) < 0) { 
+				to += ";" + wholeEmail;
+			}
+		}
+	}
+	
+	arrEmailMessage.push("");
+	arrEmailMessage.push("Please contact anybody CC'd on this email if you have any questions!");
+	document.getElementById("outputText").innerHTML = arrEmailMessage.join('<br/>');
+	var screenOutput = document.getElementById("outputText").innerHTML;
+	window.location.href = "mailto:" + to + "?cc=" + cc + "&subject=" + subject;
 }
 
 // menu option Add "PROD" Label to Tickets
@@ -1364,7 +1432,6 @@ function email() {
 				arrFileLines.push("MCC Production will be updated Tuesday " + dt + " at approximately 10:00 AM CDT");
 			}
 			arrFileLines.push("");
-			var bullet = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;•&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
 			for (var i = 0; i < lines.length; i++) {
 				var tempLine = lines[i];
 				var leftParen = tempLine.indexOf("(");
