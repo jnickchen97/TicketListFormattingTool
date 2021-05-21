@@ -1175,10 +1175,11 @@ async function sendValidationEmail() {
 	arrEmailMessage.push("You are receiving this email because you are the reporter for a Jira ticket with a status of <i>Promoted</i> or <i>Validate</i>.");
 	arrEmailMessage.push("");
 	arrEmailMessage.push("The program(s) being changed for this ticket are enabled in MCC-Prod, so until this ticket is validated it is blocking the next production deployment.");
-	arrEmailMessage.push("Below is the list of tickets that need to be validated, along with the reporter's name");
+	arrEmailMessage.push("Below is the list of tickets that need to be validated, along with the reporter's name.");
 	arrEmailMessage.push("");
 	arrEmailMessage.push("For each ticket by your name, please either test the relevant changes yourself or reach out to somebody who can test them.");
 	arrEmailMessage.push("Any of these tickets that cannot be validated by the time of the next deployment will need to be reverted from DevB.");
+	arrEmailMessage.push("The next deployment is tentatively scheduled for [DATE].");
 	arrEmailMessage.push("");
 	arrEmailMessage.push("Tickets");
 	
