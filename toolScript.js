@@ -1503,6 +1503,7 @@ function sendEmail() {
 	var subject = "MCC Production Deployment";
 	if (document.getElementById("oopEmail").checked == true) {
 		to += ";Gavin.Clyma@myYellow.com;Doug.Deppen@myYellow.com;Joanna.Rench@myYellow.com;Rob.Pendergast@myYellow.com;Tony.Thompson@myYellow.com;Derrin.Holloway@myYellow.com;theresa.bashore@myYellow.com";
+		cc += ";oopscrummasters@yrcw.com;OOP_Tech_Leads@yrcw.com";
 		subject += " (OOP)";
 	}
 	var screenOutput = document.getElementById("outputText").innerHTML;
