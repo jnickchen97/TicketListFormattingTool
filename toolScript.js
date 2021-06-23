@@ -593,21 +593,18 @@ async function processLines() {
 					document.getElementById("loaderLabel").style.display="none";
 					document.getElementById("loader").style.display="none";
 					if (ticketResponse !== "error") {
-						var mergeReqUrlLoc = ticketResponse.indexOf("href=\"http://gitlab.yrcw.com/mcc/app/mcc-modules/merge_requests/");
+						var mergeReqUrlLoc = ticketResponse.lastIndexOf("http://gitlab.yrcw.com/mcc/app/mcc-modules/");
 						if (mergeReqUrlLoc > -1) {
-							var mergeReqUrl = ticketResponse.substring(mergeReqUrlLoc+6, mergeReqUrlLoc+75);
-							var quoteLoc = mergeReqUrl.indexOf("\"");
-							mergeReqUrl = mergeReqUrl.substring(0, quoteLoc);
+							var mergeReqUrl = ticketResponse.substring(mergeReqUrlLoc, mergeReqUrlLoc + 62);
 							arrMergeReqLinks.push(mergeReqUrl);
 						} else {
 							arrMergeReqLinks.push(JiraUrl);
 						}
-						var jiraTitleLoc = ticketResponse.indexOf("data-wrm-key=\"jira.heritage\" data-wrm-batch-type=\"context\" data-initially-rendered></script>");
+						var jiraTitleLoc = ticketResponse.lastIndexOf("\"summary\":");
 						if (jiraTitleLoc > -1) {
-							var jiraTitle = ticketResponse.substring(jiraTitleLoc+100, jiraTitleLoc+500);
-							var titleStartLoc = jiraTitle.indexOf("]");
-							var titleEndLoc = jiraTitle.indexOf("- JIRA");
-							jiraTitle = jiraTitle.substring(titleStartLoc+2, titleEndLoc-1);
+							var jiraTitle = ticketResponse.substring(jiraTitleLoc + 11, jiraTitleLoc + 250);
+							var titleEndLoc = jiraTitle.indexOf("\",");
+							jiraTitle = jiraTitle.substring(0, titleEndLoc);
 							var dashLoc = tempLine.indexOf(" — ");
 							tempLine = tempLine.substring(0, rightParen+2) + jiraTitle + tempLine.substring(dashLoc, tempLine.length);
 						}
@@ -952,14 +949,15 @@ async function processMarking(tempLine) {
 	if (ticketUrlLoc > -1 && swMarkBlockersAfterAffectsProd) {
 		var JiraUrl = tempLine.substring(ticketUrlLoc, rightParen-1);
 		await getTicketStatus(JiraUrl);
-		JiraTicketResponse = JiraTicketResponse;
+		var ticketResponse = JiraTicketResponse;
 		document.getElementById("loaderLabel").style.display="none";
 		document.getElementById("loader").style.display="none";
 		if (JiraTicketResponse !== "error") {
-			var changeLoc = JiraTicketResponse.indexOf("Change status");
-			var ticketStatus = JiraTicketResponse.substring(changeLoc - 100, changeLoc);
-			var buttonLoc = ticketStatus.indexOf("button aria-label");
-			ticketStatus = ticketStatus.substring(buttonLoc + 19, ticketStatus.length - 3);
+			var statusLoc = ticketResponse.lastIndexOf("\"status\":");
+			var ticketStatus = ticketResponse.substring(statusLoc, statusLoc + 250);
+			var ticketStatusStartLoc = ticketStatus.indexOf("\"name\":") + 8;
+			var ticketStatusEndLoc = ticketStatus.indexOf("\"id\":") - 2;
+			ticketStatus = ticketStatus.substring(ticketStatusStartLoc, ticketStatusEndLoc);
 			if (ticketStatus.toUpperCase() !== "DONE" && ticketStatus.toUpperCase() !== "MIGRATED TO PROD") {
 				tempLine = "X " + tempLine;
 			}
@@ -1013,7 +1011,7 @@ function submitLogin() {
 }
 
 // returns Jira ticket status
-async function getTicketStatus(ticketUrl) {
+async function getTicketStatus(tempTicketUrl) {
 	document.getElementById("fileInput").style.display="none";
 	document.getElementById("fileInputLabel").style.display="none";
 	document.getElementById("loaderLabel").style.display="block";
@@ -1030,7 +1028,10 @@ async function getTicketStatus(ticketUrl) {
 		headers: myHeaders,
 		redirect: 'manual'
 	};
-
+	
+	var ticketUrlLoc = tempTicketUrl.indexOf("browse/") + 7;
+	var ticketNum = tempTicketUrl.substring(ticketUrlLoc, tempTicketUrl.length);
+	var ticketUrl = "https://yrcfreight.atlassian.net/rest/api/2/issue/" + ticketNum;
 	var wholeUrl = "https://jesse-cors-proxy.herokuapp.com/" + ticketUrl;
 	const response = await fetch(wholeUrl, requestOptions)
 		.then(async function(response) {
@@ -1091,10 +1092,11 @@ function checkBlockers() {
 							document.getElementById("loaderLabel").style.display="none";
 							document.getElementById("loader").style.display="none";
 							if (ticketResponse !== "error") {
-								var changeLoc = ticketResponse.indexOf("Change status");
-								var ticketStatus = ticketResponse.substring(changeLoc - 100, changeLoc);
-								var buttonLoc = ticketStatus.indexOf("button aria-label");
-								ticketStatus = ticketStatus.substring(buttonLoc + 19, ticketStatus.length - 3);
+								var statusLoc = ticketResponse.lastIndexOf("\"status\":");
+								var ticketStatus = ticketResponse.substring(statusLoc, statusLoc + 250);
+								var ticketStatusStartLoc = ticketStatus.indexOf("\"name\":") + 8;
+								var ticketStatusEndLoc = ticketStatus.indexOf("\"id\":") - 2;
+								ticketStatus = ticketStatus.substring(ticketStatusStartLoc, ticketStatusEndLoc);
 								if (ticketStatus.toUpperCase() !== "DONE" && ticketStatus.toUpperCase() !== "MIGRATED TO PROD") {
 									var ticketNum = JiraUrl.substring(JiraUrl.length-10, rightParen-1);
 									tempLine = "X " + tempLine;
@@ -1102,16 +1104,21 @@ function checkBlockers() {
 									arrBlockerTicketLinks.push(JiraUrl);
 									if (ticketStatus.toUpperCase() === "PROMOTED" || ticketStatus.toUpperCase() === "VALIDATE") {
 										// save names for validation email
-										var reporterEndLoc = ticketResponse.indexOf("- edit Reporter");
-										var reporterName = ticketResponse.substring(reporterEndLoc - 50, reporterEndLoc);
-										var reporterStartLoc = reporterName.indexOf("aria-label=");
-										reporterName = reporterName.substring(reporterStartLoc + 12, reporterName.length);
-										var ticketTitleLoc = ticketResponse.indexOf("data-wrm-key=\"jira.heritage\" data-wrm-batch-type=\"context\" data-initially-rendered></script>");
-										var ticketTitle = ticketResponse.substring(ticketTitleLoc + 100, ticketTitleLoc + 500);
-										var titleStartLoc = ticketTitle.indexOf("]");
-										var titleEndLoc = ticketTitle.indexOf("- JIRA");
-										ticketTitle = ticketTitle.substring(titleStartLoc + 2, titleEndLoc - 1);
-										var arrNameAndTicket = [reporterName, ticketTitle, ticketNum, JiraUrl];
+										var reporterStartLoc = ticketResponse.indexOf("\"reporter\":");
+										var reporter = ticketResponse.substring(reporterStartLoc, reporterStartLoc + 1300);
+										var reporterEmailStartLoc = reporter.indexOf("\"emailAddress\":") + 16;
+										var reporterEmail = reporter.substring(reporterEmailStartLoc, reporterEmailStartLoc + 60);
+										var reporterEmailEndLoc = reporterEmail.indexOf("\",");
+										var reporterEmail = reporterEmail.substring(0, reporterEmailEndLoc);
+										var reporterNameStartLoc = reporter.indexOf("\"displayName\":") + 15;
+										var reporterName = reporter.substring(reporterNameStartLoc, reporterNameStartLoc + 60);
+										var reporterNameEndLoc = reporterName.indexOf("\",");
+										var reporterName = reporterName.substring(0, reporterNameEndLoc);
+										var jiraTitleLoc = ticketResponse.lastIndexOf("\"summary\":");
+										var jiraTitle = ticketResponse.substring(jiraTitleLoc + 11, jiraTitleLoc + 250);
+										var titleEndLoc = jiraTitle.indexOf("\",");
+										jiraTitle = jiraTitle.substring(0, titleEndLoc);
+										var arrNameAndTicket = [reporterName, jiraTitle, ticketNum, JiraUrl, reporterEmail];
 										arrBlockerNamesAndTickets.push(arrNameAndTicket);
 									}
 								}
@@ -1184,23 +1191,17 @@ async function sendValidationEmail() {
 	arrEmailMessage.push("Tickets");
 	
 	for (var i = 0; i < arrBlockerNamesAndTickets.length; i++) {
-		var tempName = arrBlockerNamesAndTickets[i][0];
-		var firstName = tempName.substring(0, tempName.indexOf(" "));
-		var lastName = tempName.substring(tempName.lastIndexOf(" ") + 1, tempName.length);
-		if (tempName.indexOf(" ") < 0) {
-			firstName = tempName.substring(0, 1).toUpperCase() + tempName.substring(1, tempName.indexOf("."));
-			lastName = tempName.substring(tempName.indexOf(".") + 1, tempName.indexOf(".") + 2).toUpperCase() + tempName.substring(tempName.indexOf(".") + 2, tempName.indexOf("@"));
-		}
+		var reporterName = arrBlockerNamesAndTickets[i][0];
+		var reporterEmail = arrBlockerNamesAndTickets[i][4];
 		var ticketTitle = arrBlockerNamesAndTickets[i][1];
 		var ticketNum = arrBlockerNamesAndTickets[i][2];
 		var ticketUrl = arrBlockerNamesAndTickets[i][3];
-		arrEmailMessage.push(bullet + firstName + " " + lastName + ": " + createLink(ticketUrl, ticketNum) + " - " + ticketTitle);
-		var wholeEmail = firstName + "." + lastName + "@myYellow.com";
+		arrEmailMessage.push(bullet + reporterName + ": " + createLink(ticketUrl, ticketNum) + " - " + ticketTitle);
 		if (to.length == 0) {
-			to = wholeEmail;
+			to = reporterEmail;
 		} else {
-			if (to.indexOf(wholeEmail) < 0) { 
-				to += ";" + wholeEmail;
+			if (to.indexOf(reporterEmail) < 0 && cc.toUpperCase().indexOf(reporterEmail.toUpperCase()) < 0) { 
+				to += ";" + reporterEmail;
 			}
 		}
 	}
