@@ -135,7 +135,7 @@ function goToChangeRequest() {
 
 // goes to change request list when button is clicked
 function newChangeRequest() {
-	navigate("https://yrcw.service-now.com/nav_to.do?uri=%2Fchange_request_list.do%3Fsysparm_query%3DstateNOT%2520IN9%252C10%255Eassigned_to.nameSTARTSWITHmoore%26sysparm_first_row%3D1%26sysparm_view%3D%26sysparm_choice_query_raw%3D%26sysparm_list_header_search%3Dtrue", true);
+	navigate("https://yrcw.service-now.com/nav_to.do?uri=%2Fchange_request_list.do%3Fsysparm_query%3DstateNOT%20IN9,10%5Eshort_descriptionSTARTSWITHWeekly%20updates%20to%20Modernization%20MCC%20applications%20-%20M204%20renovated%20code%20to%20Java%2FSQL%26sysparm_first_row%3D1%26sysparm_view%3D%26sysparm_choice_query_raw%3D%26sysparm_list_header_search%3Dtrue", true);
 	document.getElementById("chgReq").focus();
 }
 
