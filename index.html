@@ -16,7 +16,7 @@
 					<button class="dropbtn">Select an Option</button>
 					<div class="dropdown-content">
 						<button onclick="newList();" class="btnWidth">Create New Ticket List</button>
-						<button onclick="jenkins();" class="btnWidth">Get New DevB Tickets from Jenkins</button>
+						<button onclick="jenkins();" class="btnWidth">Get New Tickets from Jenkins</button>
 						<button onclick="affectsProd();" class="btnWidth">Check Which New Tickets Affect Prod</button>
 						<button onclick="markBlockers();" class="btnWidth">Mark All Prod Blockers</button>
 						<button onclick="checkBlockers();" class="btnWidth">Check Blockers for Validation</button>
@@ -32,7 +32,7 @@
 		</ul>
 		<div id="myNav" class="overlay">
 			<table class="menu-content" id="menuInfo">
-					<th>Current version: 2.7.1</th>
+					<th>Current version: 2.8</th>
 					<th style="font-size:20px" colspan="6">Here's what each option does:</th>
 				</tr>
 				<tr>
@@ -48,7 +48,7 @@
 					</td>
 				</tr>
 				<tr>
-					<td>Get New DevB Tickets from Jenkins:</td>
+					<td>Get New Tickets from Jenkins:</td>
 					<td style="text-align:left;" colspan="3" class="padCol1">This option will help format new tickets from Jenkins.<br>
 						Go to Jenkins changes, and copy all text from the newest build down to the oldest build you want.<br>
 						Don't worry if non-DevB builds are copied, as those will be filtered out.<br>
@@ -104,6 +104,14 @@
 					&nbsp;&nbsp;&nbsp;&nbsp;•&nbsp;&nbsp;Open the help menu for information about what each option does<br><br>
 					&nbsp;&nbsp;&nbsp;&nbsp;•&nbsp;&nbsp;Send feedback about this application
 				</label>
+			</div>
+			<label for="JenkinsBranch" id="JenkinsBranchLabel" class="JenkinsBranchAll" style="margin-left:90px; display:none">Select branch to filter on: </label>
+			<div id="JenkinsBranch" class="JenkinsBranchAll" style="width:200px; margin-left:10px; margin-bottom:40px; margin-top:10px; display:none">
+				<select id="JenkinsBranchOption">
+					<option value="release/PreProduction">Pre-Prod</option>
+					<option value="develop">DevB</option>
+					<option value="feature/OOP/Dev1">Dev1</option>
+				</select>
 			</div>
 			<table>
 				<tr>

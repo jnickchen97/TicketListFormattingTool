@@ -47,6 +47,7 @@ function resetScreen() {
 	var changeUrl;
 	document.getElementById("welcomeLabel").style.display="none";
 	hideClass("JenkinsAll");
+	hideClass("JenkinsBranchAllAll");
 	document.getElementById("JenkinsButton").style.display="none";
 	document.getElementById("JenkinsLink").style.display="none";
 	document.getElementById("JenkinsOldBuild").style.display="none";
@@ -214,13 +215,13 @@ function downloadList() {
 	document.getElementById("optionLabel").innerHTML = "The new ticket list has been saved to your downloads folder as " + deployDate + ".";
 }
 
-// menu option Get New DevB Tickets from Jenkins
+// menu option Get New Tickets from Jenkins
 function jenkins() {
 	resetScreen();
 	swCheckNewTicketsAffectProd = false;
 	swCheckProd = false;
 	swAddTicketsFromJenkins = true;
-	document.getElementById("optionLabel").innerHTML = "Get New DevB Tickets from Jenkins";
+	document.getElementById("optionLabel").innerHTML = "Get New Tickets from Jenkins";
 	arrFormattedJenkinsTickets = new Array();
 	if (!swAddTicketsToNewList) {
 		newListBuilder = "";
@@ -266,7 +267,7 @@ function jenkins() {
 					}
 				}
 				
-				document.getElementById("optionLabel").innerHTML = "Get New DevB Tickets from Jenkins";
+				document.getElementById("optionLabel").innerHTML = "Get New Tickets from Jenkins";
 				document.getElementById("fileInput").style.display="none";
 				document.getElementById("fileInputLabel").style.display="none";
 				document.getElementById("JenkinsButton").style.display="inline-block";
@@ -275,6 +276,7 @@ function jenkins() {
 				document.getElementById("alsoAffectsProd").style.display="inline-block";
 				document.getElementById("alsoAffectsProdLabel").style.display="inline-block";
 				showClass("JenkinsAll");
+				showClassInline("JenkinsBranchAll");
 				removeListeners();
 			};
 			reader.onerror = (e) => alert(e.target.error.name); 
@@ -289,6 +291,7 @@ function jenkins() {
 		document.getElementById("alsoAffectsProd").style.display="inline-block";
 		document.getElementById("alsoAffectsProdLabel").style.display="inline-block";
 		showClass("JenkinsAll");
+		showClassInline("JenkinsBranchAll");
 	}
 }
 
@@ -338,6 +341,7 @@ function navigate(href, newTab) {
 // runs when format button is clicked after entering new tickets
 function jenkinsFormat() {
 	hideClass("JenkinsAll");
+	hideClass("JenkinsBranchAll");
 	document.getElementById("JenkinsButton").style.display="none";
 	document.getElementById("JenkinsLink").style.display="none";
 	document.getElementById("JenkinsOldBuild").style.display="none";
@@ -353,21 +357,24 @@ function jenkinsFormat() {
 	var allText = document.getElementById("JenkinsText").value;
 	addTicketsNewBuild = "";
 	
+	var selectedBranch = document.getElementById("JenkinsBranchOption").value;
+	document.getElementById('JenkinsBranchOption').value="release/PreProduction";
+	
 	if (allText.length != 0) {
 		for (var i = 0; i < lines.length; i++) {
 			var tempLine = lines[i];
-			var developBuild = tempLine.indexOf("- Branch [develop]");
+			var selectedBranchLoc = tempLine.indexOf("- Branch [" + selectedBranch + "]");
 			var anyBuild = tempLine.indexOf("- Branch [");
 			if (anyBuild > -1) {
-				var swInDevelopBuild = false;
-				if (developBuild > -1) {
-					swInDevelopBuild = true;
+				var swInSelectedBranch = false;
+				if (selectedBranchLoc > -1) {
+					swInSelectedBranch = true;
 					if (addTicketsNewBuild.length == 0) {
-						addTicketsNewBuild = tempLine.substring(tempLine.indexOf("#")+1, developBuild-1);
+						addTicketsNewBuild = tempLine.substring(tempLine.indexOf("#")+1, selectedBranchLoc-1);
 					}
 				}
 			}
-			if (tempLine.length != 0 && tempLine !== "Changes" && swInDevelopBuild && anyBuild < 0) {
+			if (tempLine.length != 0 && tempLine !== "Changes" && swInSelectedBranch && anyBuild < 0) {
 				arrFileLines.push(tempLine);
 			}
 		}
@@ -1577,6 +1584,15 @@ function showClass(className) {
 	var i;
 	for (i = 0; i < x.length; i++) {
 		x[i].style.display="block";
+	}
+}
+
+// displays all elements of specified class in-line
+function showClassInline(className) {
+	var x = document.getElementsByClassName(className);
+	var i;
+	for (i = 0; i < x.length; i++) {
+		x[i].style.display="inline-block";
 	}
 }
 
