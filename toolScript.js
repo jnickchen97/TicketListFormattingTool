@@ -188,7 +188,7 @@ function submitNewList() {
 	var chgReq = document.getElementById("chgReq").value;
 	var chgReqUrl = document.getElementById("chgReqUrl").value;
 	newListBuilder = "* [Previous Release File Compare] (http://gitlab.yrcw.com/mcc/app/mcc-modules/compare/" + oldBuild + "..." + newBuild + " )\n" +
-		"* [" + chgReq + "] (" + chgReqUrl + " )\n" + "* [Merge Request] ([MERGE REQUEST URL HERE] ) (see merge request for additional DevB fixes, they are not included in this email)\n\n";
+		"* [" + chgReq + "] (" + chgReqUrl + " )\n" + "* [Merge Request] ([MERGE REQUEST URL HERE] )\n\n";
 	if (document.getElementById("alsoGetTickets").checked == true) {
 		swAddTicketsToNewList = true;
 		jenkins();
@@ -1442,11 +1442,12 @@ function email() {
 			arrFileLines.push("");
 			if (swDeployThursday && !swDeployNextWeek) {
 				var dt = getThursday();
-				arrFileLines.push("MCC Production will be updated Thursday " + dt + " at approximately 10:00 AM CDT");
+				arrFileLines.push("MCC Production will be updated Thursday " + dt + " at approximately 10:00 AM CDT.");
 			} else {
 				var dt = getTuesday();
-				arrFileLines.push("MCC Production will be updated Tuesday " + dt + " at approximately 10:00 AM CDT");
+				arrFileLines.push("MCC Production will be updated Tuesday " + dt + " at approximately 10:00 AM CDT.");
 			}
+			arrFileLines.push("Tickets listed under the \"DevB\" heading do not have an impact to Production.");
 			arrFileLines.push("");
 			for (var i = 0; i < lines.length; i++) {
 				var tempLine = lines[i];
@@ -1468,7 +1469,8 @@ function email() {
 					var mmpiLoc = tempLine.toUpperCase().indexOf("MMPI");
 					var m2jvLoc = tempLine.toUpperCase().indexOf("M2JV");
 					if (tempLine.startsWith("**DevB**")) {
-						break;
+						arrFileLines.push("");
+						arrFileLines.push("DevB");
 					} else if (tempLine.startsWith("**Production**")) {
 						arrFileLines.push("");
 						arrFileLines.push("Production");
