@@ -21,8 +21,6 @@ var swFoundDupTicket = false;
 var swFoundProdSection = false;
 var swFoundswFoundProd = false;
 var swMarkBlockersAfterAffectsProd = false;
-var swDeployNextWeek = false;
-var swDeployThursday = false;
 
 // array variables
 var arrAllJenkinsTickets;
@@ -82,17 +80,17 @@ function resetScreen() {
 	pwd = "";
 	document.getElementById("alsoGetTickets").style.display="none";
 	document.getElementById("alsoGetTicketsLabel").style.display="none";
-	document.getElementById("alsoGetTickets").checked = false;
+	document.getElementById("alsoGetTickets").checked = true;
 	mmpiTicket = "";
 	m2jvTicket = "";
 	document.getElementById("myDynamicTable").innerHTML = "";
 	document.getElementById("myDynamicTable").style.display = "block";
 	document.getElementById("alsoMarkBlockers").style.display="none";
 	document.getElementById("alsoMarkBlockersLabel").style.display="none";
-	document.getElementById("alsoMarkBlockers").checked = false;
+	document.getElementById("alsoMarkBlockers").checked = true;
 	document.getElementById("alsoAffectsProd").style.display="none";
 	document.getElementById("alsoAffectsProdLabel").style.display="none";
-	document.getElementById("alsoAffectsProd").checked = false;
+	document.getElementById("alsoAffectsProd").checked = true;
 	document.getElementById("affectsProdBtn").style.display = "none";
 	hideClass("newListSpacing");
 	document.getElementById("validationEmailButton").style.display="none";
@@ -204,12 +202,7 @@ function downloadList() {
 	var blob = new Blob([newListBuilder], {
 		type: "text/plain;charset=utf-8"
 	});
-	if (swDeployThursday && !swDeployNextWeek) {
-		var deployDate = getThursday().replace("/", "");
-	} else {
-		var deployDate = getTuesday().replace("/", "");
-	}
-	deployDate = deployDate.replace("/", "");
+	var deployDate = getNextBusDay().replaceAll("/", "");
 	deployDate = "prod_deploy_" + deployDate + ".txt";
 	saveAs(blob, deployDate);
 	document.getElementById("optionLabel").innerHTML = "The new ticket list has been saved to your downloads folder as " + deployDate + ".";
@@ -1440,13 +1433,10 @@ function email() {
 			var arrFileLines = new Array();
 			arrFileLines.push("All,");
 			arrFileLines.push("");
-			if (swDeployThursday && !swDeployNextWeek) {
-				var dt = getThursday();
-				arrFileLines.push("MCC Production will be updated Thursday " + dt + " at approximately 10:00 AM CDT.");
-			} else {
-				var dt = getTuesday();
-				arrFileLines.push("MCC Production will be updated Tuesday " + dt + " at approximately 10:00 AM CDT.");
-			}
+			var nextBusDay = getNextBusDay();
+			var nextDate = new Date();
+			var dayOfWeek = getDayOfWeek(nextDate.getDay() + getDayOffset());
+			arrFileLines.push("MCC Production will be updated " + dayOfWeek + " " + nextBusDay + " at approximately 7:00 AM CDT.");
 			arrFileLines.push("Tickets listed under the \"DevB\" heading do not have an impact to Production.");
 			arrFileLines.push("");
 			for (var i = 0; i < lines.length; i++) {
@@ -1520,52 +1510,31 @@ function sendEmail() {
 	window.location.href = "mailto:" + to + "?cc=" + cc + "&subject=" + subject;
 }
 
-// return Tuesday date of current week
-function getTuesday() {
-	var date = new Date();
-	var convertedDate = date.getDay() === 0 ? -6 : 2;
-	if (swDeployNextWeek == false) {
-		var diff = date.getDate() - date.getDay() + convertedDate;
-	} else {
-		var diff = date.getDate() - date.getDay() + convertedDate + 7;
-	}
-	if (date.getDay() > convertedDate) {
-		swDeployThursday = true;
-	}
-	var tuesday = new Date(date.setDate(diff));
-	let year = tuesday.getFullYear();
-	let month = (1 + tuesday.getMonth()).toString().padStart(2, '0');
-	let day = tuesday.getDate().toString().padStart(2, '0');
+// return date of next business day
+function getNextBusDay() {
+	var nextDate = new Date();
+	var offset = getDayOffset();
+	nextDate.setDate(nextDate.getDate() + offset);
+	let year = nextDate.getFullYear();
+	let month = (1 + nextDate.getMonth()).toString().padStart(2, '0');
+	let day = nextDate.getDate().toString().padStart(2, '0');
 	return month + '/' + day + '/' + year;
 }
 
-// return Thursday date of current week
-function getThursday() {
-	var date = new Date();
-	var convertedDate = date.getDay() === 0 ? -6 : 4;
-	if (date.getDay() < convertedDate) {
-		var diff = date.getDate() - date.getDay() + convertedDate;
-		swDeployNextWeek = false;
-	} else {
-		var diff = date.getDate() - date.getDay() + convertedDate + 7;
-		swDeployNextWeek = true;
-	}
-	var thursday = new Date(date.setDate(diff));
-	let year = thursday.getFullYear();
-	let month = (1 + thursday.getMonth()).toString().padStart(2, '0');
-	let day = thursday.getDate().toString().padStart(2, '0');
-	return month + '/' + day + '/' + year;
+// return day of the week
+function getDayOfWeek(day) {
+	const weekday = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+	return weekday[day];
 }
 
-// display items upon page loading
-function screenLoad() {
-	var thursday = getThursday();
-	var tuesday = getTuesday();
-	if (!swDeployNextWeek) {
-		document.getElementById("dateLabel").innerHTML = "This week's PROD deploys will be on " + tuesday + " (Tuesday) and " + thursday + " (Thursday)";
-	} else {
-		document.getElementById("dateLabel").innerHTML = "Next week's PROD deploys will be on " + tuesday + " (Tuesday) and " + thursday + " (Thursday)";
+// return offset for deploy day
+function getDayOffset() {
+	var nextDate = new Date();
+	var offset = 1;
+	if (nextDate.getDay() == 5) {
+		offset = 3;
 	}
+	return offset;
 }
 
 // opens email template to send feedback about tool
@@ -1575,6 +1544,7 @@ function sendFeedback() {
 		var subject = "Ticket List Formatting Tool Feedback";
 		window.location.href = "mailto:" + to + "?subject=" + subject;
 	} else {
+		resetScreen();
 		document.getElementById("optionLabel").innerHTML = "Send Feedback";
 		document.getElementById("outputText").innerHTML = "You clicked cancel!";
 	}

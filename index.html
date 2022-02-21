@@ -8,7 +8,7 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	</head>
 	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<body onload="screenLoad();">
+	<body>
 		<ul>
 			<li><span onclick="toggleNav()">&#9776; Help</span></li>
 			<li>
@@ -21,8 +21,8 @@
 						<button onclick="markBlockers();" class="btnWidth">Mark All Prod Blockers</button>
 						<button onclick="checkBlockers();" class="btnWidth">Check Blockers for Validation</button>
 						<button onclick="addProdLabel();" class="btnWidth">Add "PROD" Label to Tickets</button>
-						<button onclick="merge();" class="btnWidth">Format List for Merge Request</button>
 						<button onclick="changeTask();" class="btnWidth">Format List for Change Task</button>
+						<button onclick="merge();" class="btnWidth">Format List for Merge Request</button>
 						<button onclick="email();" class="btnWidth">Format List for Email</button>
 					</div>
 				</div>
@@ -32,7 +32,7 @@
 		</ul>
 		<div id="myNav" class="overlay">
 			<table class="menu-content" id="menuInfo">
-					<th>Current version: 3.0</th>
+					<th>Current version: 3.1</th>
 					<th style="font-size:20px" colspan="6">Here's what each option does:</th>
 				</tr>
 				<tr>
@@ -56,9 +56,9 @@
 						The tickets will be displayed in the correct format, and can then be copied and pasted directly into the ticket list file.<br>
 						There is also a button that goes to the Jenkins changes page.
 					</td>
-					<td class="padCol2">Format List for Merge Request:</td>
-					<td style="text-align:left;" colspan="3">This option displays the selected list mostly as-is, with the Merge Request line and extra whitespace removed.<br>
-						The list can then be copied directly into the merge request.
+					<td class="padCol2">Format List for Change Task:</td>
+					<td style="text-align:left;" colspan="3">This option displays only the tickets, formatted correctly for the change task.<br>
+						The list can then be copied directly into the detailed description section of the change task.
 					</td>
 				</tr>
 				<tr>
@@ -66,9 +66,9 @@
 					<td style="text-align:left;" colspan="3" class="padCol1">This option can be used to research which tickets affect prod, and sorts them accordingly.<br>
 						The Prod tickets will also be marked with a "PROD" label. The user is also presented with an option to check and mark all Prod blockers.
 					</td>
-					<td class="padCol2">Format List for Change Task:</td>
-					<td style="text-align:left;" colspan="3">This option displays only the tickets, formatted correctly for the change task.<br>
-						The list can then be copied directly into the detailed description section of the change task.
+					<td class="padCol2">Format List for Merge Request:</td>
+					<td style="text-align:left;" colspan="3">This option displays the selected list mostly as-is, with the Merge Request line and extra whitespace removed.<br>
+						The list can then be copied directly into the merge request.
 					</td>
 				</tr>
 				<tr>
@@ -108,8 +108,8 @@
 			<label for="JenkinsBranch" id="JenkinsBranchLabel" class="JenkinsBranchAll" style="margin-left:90px; display:none">Select branch to filter on: </label>
 			<div id="JenkinsBranch" class="JenkinsBranchAll" style="width:200px; margin-left:10px; margin-bottom:40px; margin-top:10px; display:none">
 				<select id="JenkinsBranchOption">
-					<option value="release/PreProduction">Pre-Prod</option>
 					<option value="develop">DevB</option>
+					<option value="release/PreProduction">Pre-Prod</option>
 					<option value="feature/OOP/Dev1">Dev1</option>
 				</select>
 			</div>
