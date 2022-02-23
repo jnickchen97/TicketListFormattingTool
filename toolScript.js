@@ -605,6 +605,7 @@ async function processLines() {
 							var jiraTitle = ticketResponse.substring(jiraTitleLoc + 11, jiraTitleLoc + 250);
 							var titleEndLoc = jiraTitle.indexOf("\",");
 							jiraTitle = jiraTitle.substring(0, titleEndLoc);
+							jiraTitle = jiraTitle.replaceAll("\\\"", "\"");
 							var dashLoc = tempLine.indexOf(" — ");
 							tempLine = tempLine.substring(0, rightParen+2) + jiraTitle + tempLine.substring(dashLoc, tempLine.length);
 						}
