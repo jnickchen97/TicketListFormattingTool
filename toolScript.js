@@ -1525,7 +1525,11 @@ function getNextBusDay() {
 // return day of the week
 function getDayOfWeek(day) {
 	const weekday = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-	return weekday[day];
+	if (day > 6) {
+		return weekday[1];
+	} else {
+		return weekday[day];
+	}
 }
 
 // return offset for deploy day
