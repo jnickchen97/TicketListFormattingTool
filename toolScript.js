@@ -471,13 +471,18 @@ function checkDups(tempLine) {
 // formats and returns new line
 function formatLine(tempLine) {
 	var lineNoSpaces = tempLine.replace(/[ -]/g, "");
+	var notNum = isNaN(lineNoSpaces.charAt(8));
+	var ticketOffset = 8;
+	if (notNum == false) {
+		ticketOffset++;
+	}
 	var mmpiLoc = lineNoSpaces.toUpperCase().indexOf("MMPI");
 	var m2jvLoc = lineNoSpaces.toUpperCase().indexOf("M2JV");
 	if (!tempLine.startsWith("*")) {
 		if (mmpiLoc > -1 && tempLine.toUpperCase().indexOf("ROLLBACK") < 0 && tempLine.toUpperCase().indexOf("REVERT") < 0) {
-			mmpiTicket = lineNoSpaces.substring(mmpiLoc, mmpiLoc + 9);
+			mmpiTicket = lineNoSpaces.substring(mmpiLoc, mmpiLoc + ticketOffset);
 			mmpiTicket = mmpiTicket.substring(0, 4) + "-" + mmpiTicket.substring(4, mmpiTicket.length);
-			tempLine = tempLine.substring(0, mmpiLoc) + tempLine.substring(mmpiLoc + 10, tempLine.length);
+			tempLine = tempLine.substring(0, mmpiLoc) + tempLine.substring(mmpiLoc + ticketOffset + 1, tempLine.length);
 			var realStart = 0;
 			for (var j = 0; j < tempLine.length; j++) {
 				if (!tempLine[j].match(/[a-zA-Z]/)) {
@@ -489,9 +494,9 @@ function formatLine(tempLine) {
 			tempLine = tempLine.substring(realStart, tempLine.length);
 			tempLine = "* [" + mmpiTicket + "] (https://yrcfreight.atlassian.net/browse/" + mmpiTicket + " ) " + tempLine.trim();
 		} else if (m2jvLoc > -1 && tempLine.toUpperCase().indexOf("ROLLBACK") < 0 && tempLine.toUpperCase().indexOf("REVERT") < 0) {
-			m2jvTicket = lineNoSpaces.substring(m2jvLoc, m2jvLoc + 9);
+			m2jvTicket = lineNoSpaces.substring(m2jvLoc, m2jvLoc + ticketOffset);
 			m2jvTicket = m2jvTicket.substring(0, 4) + "-" + m2jvTicket.substring(4, m2jvTicket.length);
-			tempLine = tempLine.substring(0, m2jvLoc) + tempLine.substring(m2jvLoc + 10, tempLine.length);
+			tempLine = tempLine.substring(0, m2jvLoc) + tempLine.substring(m2jvLoc + ticketOffset + 1, tempLine.length);
 			var realStart = 0;
 			for (var j = 0; j < tempLine.length; j++) {
 				if (!tempLine[j].match(/[a-zA-Z]/)) {
@@ -595,7 +600,12 @@ async function processLines() {
 					if (ticketResponse !== "error") {
 						var mergeReqUrlLoc = ticketResponse.lastIndexOf("http://gitlab.yrcw.com/mcc/app/mcc-modules/");
 						if (mergeReqUrlLoc > -1) {
-							var mergeReqUrl = ticketResponse.substring(mergeReqUrlLoc, mergeReqUrlLoc + 62);
+							var notNum = isNaN(ticketResponse.charAt(mergeReqUrlLoc + mergeOffset));
+							var mergeOffset = 62;
+							if (notNum == false) {
+								mergeOffset++;
+							}
+							var mergeReqUrl = ticketResponse.substring(mergeReqUrlLoc, mergeReqUrlLoc + mergeOffset);
 							arrMergeReqLinks.push(mergeReqUrl);
 						} else {
 							arrMergeReqLinks.push(JiraUrl);
