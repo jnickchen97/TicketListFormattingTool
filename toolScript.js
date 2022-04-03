@@ -600,8 +600,8 @@ async function processLines() {
 					if (ticketResponse !== "error") {
 						var mergeReqUrlLoc = ticketResponse.lastIndexOf("http://gitlab.yrcw.com/mcc/app/mcc-modules/");
 						if (mergeReqUrlLoc > -1) {
-							var notNum = isNaN(ticketResponse.charAt(mergeReqUrlLoc + mergeOffset));
 							var mergeOffset = 62;
+							var notNum = isNaN(ticketResponse.charAt(mergeReqUrlLoc + mergeOffset));
 							if (notNum == false) {
 								mergeOffset++;
 							}
