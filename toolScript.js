@@ -317,7 +317,7 @@ function toJenkinsChanges() {
 
 // goes to Gitlab to search for old builds when button is clicked
 function toOldBuild() {
-	navigate('http://gitlab.yrcw.com/mcc/environment/mcc-environment-prod/merge_requests?scope=all&search=devb&state=merged', true);
+	navigate('http://gitlab.yrcw.com/mcc/environment/mcc-environment-prod/merge_requests?scope=all&search=devb&sort=updated_desc&state=merged', true);
 	document.getElementById("JenkinsText").focus();
 }
 
