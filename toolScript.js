@@ -134,7 +134,7 @@ function goToChangeRequest() {
 
 // goes to change request list when button is clicked
 function newChangeRequest() {
-	navigate("https://yrcw.service-now.com/nav_to.do?uri=%2Fchange_request_list.do%3Fsysparm_query%3DstateNOT%20IN9,10%5Eshort_descriptionSTARTSWITHWeekly%20updates%20to%20Modernization%20MCC%20applications%20-%20M204%20renovated%20code%20to%20Java%2FSQL%26sysparm_first_row%3D1%26sysparm_view%3D%26sysparm_choice_query_raw%3D%26sysparm_list_header_search%3Dtrue", true);
+	navigate("https://myyellow.service-now.com/nav_to.do?uri=%2Fchange_request_list.do%3Fsysparm_query%3DstateNOT%2520IN9,10%5Eshort_descriptionSTARTSWITHWeekly%2520updates%2520to%2520Modernization%2520MCC%2520applications%2520-%2520M204%2520renovated%2520code%2520to%2520Java%2FSQL%26sysparm_first_row%3D1%26sysparm_view%3D%26sysparm_choice_query_raw%3D%26sysparm_list_header_search%3Dtrue", true);
 	document.getElementById("chgReq").focus();
 }
 
@@ -1403,7 +1403,7 @@ function changeTask() {
 				} else if (tempLine.startsWith("* [CHG")) {
 					if (tempLine.indexOf("CHG URL HERE") < 0) {
 						document.getElementById("goToChangeRequest").style.display="block";
-						changeUrl = tempLine.substring(tempLine.indexOf("https://yrcw.service-now"), tempLine.indexOf(")")-1);
+						changeUrl = tempLine.substring(tempLine.indexOf("https://myyellow.service-now"), tempLine.indexOf(")")-1);
 					} else {
 						document.getElementById("newChangeRequest").style.display="block";
 					}
