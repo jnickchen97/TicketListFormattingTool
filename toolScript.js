@@ -1510,7 +1510,7 @@ function removeListeners() {
 // opens new email template for deployment notification
 function sendEmail() {
 	var to = "ITModernizationNotifications@yrcw.com";
-	var cc = "YT_Solution_Services@yrcfreight.com;Josh.Green@myYellow.com;Laura.Smith@myYellow.com;Pam.Joachim@myYellow.com;JoeC.Biddle@myYellow.com;Derek.Nelson@myYellow.com;Lezli.Stalder@myYellow.com";
+	var cc = "YT_Solution_Services@yrcfreight.com;Josh.Green@myYellow.com;Laura.Smith@myYellow.com;Pam.Joachim@myYellow.com;JoeC.Biddle@myYellow.com;Derek.Nelson@myYellow.com;Lezli.Stalder@myYellow.com;Stefan.Crandall@myYellow.com";
 	var subject = "MCC Production Deployment";
 	if (document.getElementById("oopEmail").checked == true) {
 		to += ";Gavin.Clyma@myYellow.com;Doug.Deppen@myYellow.com;Joanna.Rench@myYellow.com;Rob.Pendergast@myYellow.com;Tony.Thompson@myYellow.com;Derrin.Holloway@myYellow.com;theresa.bashore@myYellow.com";
