@@ -24,6 +24,7 @@
 						<button onclick="changeTask();" class="btnWidth">Format List for Change Task</button>
 						<button onclick="merge();" class="btnWidth">Format List for Merge Request</button>
 						<button onclick="email();" class="btnWidth">Format List for Email</button>
+						<button onclick="devbCommits();" class="btnWidth">Find Changes in Test Environment</button>
 					</div>
 				</div>
 			</li>
@@ -32,7 +33,7 @@
 		</ul>
 		<div id="myNav" class="overlay">
 			<table class="menu-content" id="menuInfo">
-					<th>Current version: 3.2.0</th>
+					<th>Current version: 3.3.0</th>
 					<th style="font-size:20px" colspan="6">Here's what each option does:</th>
 				</tr>
 				<tr>
@@ -78,7 +79,7 @@
 						**NOTE:** Only use this option on a newly formatted list.<br>If a list is selected where some "blockers" have already been deemed safe for production, those tickets will be marked with an "X" again. 
 					</td>
 					<td class="padCol2">Format List for Email:</td>
-					<td style="text-align:left;;" colspan="3">This option displays the file compare, change request, merge request, and all tickets on the selected list.<br>
+					<td style="text-align:left;" colspan="3">This option displays the file compare, change request, merge request, and all tickets on the selected list.<br>
 						The list will be correctly formatted for the body of the PROD push notification email.<br>
 						A button is also shown that opens a new email template with the correct information.<br>
 						The formatted list can then be copied into the email.
@@ -90,6 +91,10 @@
 						the "X" is removed.<br>A list of the remaining blockers is displayed, along with the entire list of production tickets.<br>
 						This option will not check "blockers" which have had the "X" manually removed, so it is safe to use on an existing list.<br>
 						An option is also presented to send a blocker validation email to the appropriate ticket reporters.
+					</td>
+					<td class="padCol2">Find Changes in Test Environment:</td>
+					<td style="text-align:left;" colspan="3">This option will format a list of commits that exist in feature/DevB but not develop.<br>
+						This can be used when re-creating the feature/DevB branch off of develop.
 					</td>
 				</tr>
 			</table>

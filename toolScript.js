@@ -20,6 +20,7 @@ var swError404 = false;
 var swFoundDupTicket = false;
 var swFoundProdSection = false;
 var swFoundswFoundProd = false;
+var swFormatDevbCommits = false;
 var swMarkBlockersAfterAffectsProd = false;
 
 // array variables
@@ -270,6 +271,7 @@ function jenkins() {
 				document.getElementById("alsoAffectsProdLabel").style.display="inline-block";
 				showClass("JenkinsAll");
 				showClassInline("JenkinsBranchAll");
+				swFormatDevbCommits = false;
 				removeListeners();
 			};
 			reader.onerror = (e) => alert(e.target.error.name); 
@@ -285,6 +287,7 @@ function jenkins() {
 		document.getElementById("alsoAffectsProdLabel").style.display="inline-block";
 		showClass("JenkinsAll");
 		showClassInline("JenkinsBranchAll");
+		swFormatDevbCommits = false;
 	}
 }
 
@@ -341,74 +344,162 @@ function jenkinsFormat() {
 	document.getElementById("alsoAffectsProd").style.display="none";
 	document.getElementById("alsoAffectsProdLabel").style.display="none";
 	
-	if (document.getElementById("alsoAffectsProd").checked == true) {
-		swCheckNewTicketsAffectProd = true;
-	}
-	
-	var arrFileLines = new Array();
-	var lines = document.getElementById("JenkinsText").value.split(/\r\n|\n/);
-	var allText = document.getElementById("JenkinsText").value;
-	addTicketsNewBuild = "";
-	
-	var selectedBranch = document.getElementById("JenkinsBranchOption").value;
-	document.getElementById('JenkinsBranchOption').value="release/PreProduction";
-	
-	if (allText.length != 0) {
-		for (var i = 0; i < lines.length; i++) {
-			var tempLine = lines[i];
-			var selectedBranchLoc = tempLine.indexOf("- Branch [" + selectedBranch + "]");
-			var anyBuild = tempLine.indexOf("- Branch [");
-			if (anyBuild > -1) {
-				var swInSelectedBranch = false;
-				if (selectedBranchLoc > -1) {
-					swInSelectedBranch = true;
-					if (addTicketsNewBuild.length == 0) {
-						addTicketsNewBuild = tempLine.substring(tempLine.indexOf("#")+1, selectedBranchLoc-1);
+	if (swFormatDevbCommits) {
+		var arrCommits = new Array();
+		var arrTicketNums = new Array();
+		var arrNoTicket = new Array();
+		var lines = document.getElementById("JenkinsText").value.split(/\r\n|\n/);
+		var allText = document.getElementById("JenkinsText").value;
+		if (allText.length != 0) {
+			for (var i = 0; i < lines.length; i++) {
+				var mmpiTicketNum = "";
+				var m2jvTicketNum = "";
+				var tempLine = lines[i];
+				if (tempLine.indexOf("Merge branch") < 0 && tempLine.indexOf("Merge remote-tracking branch") < 0) {
+					var lineNoSpaces = tempLine.replace(/[ -]/g, "");
+					var notNum = isNaN(lineNoSpaces.charAt(8));
+					var ticketOffset = 8;
+					if (notNum == false) {
+						ticketOffset++;
+					}
+					var mmpiLoc = lineNoSpaces.toUpperCase().indexOf("MMPI");
+					var m2jvLoc = lineNoSpaces.toUpperCase().indexOf("M2JV");
+					if (mmpiLoc > -1) {
+						mmpiTicketNum = lineNoSpaces.substring(mmpiLoc, mmpiLoc + ticketOffset);
+						mmpiTicketNum = mmpiTicketNum.substring(0, 4) + "-" + mmpiTicketNum.substring(4, mmpiTicketNum.length);
+						tempLine = tempLine.substring(0, mmpiLoc) + tempLine.substring(mmpiLoc + ticketOffset + 1, tempLine.length);
+						tempLine = tempLine.replace(":", "");
+						tempLine = tempLine.replace("-", "");
+						tempLine = tempLine.trim();
+						tempLine = mmpiTicketNum + ": " + tempLine;
+						var realStart = 0;
+						for (var j = 0; j < tempLine.length; j++) {
+							if (!tempLine[j].match(/[a-zA-Z]/)) {
+								realStart = j+1;
+							} else {
+								break;
+							}
+						}
+						tempLine = tempLine.substring(realStart, tempLine.length);
+					} else if (m2jvLoc > -1) {
+						m2jvTicketNum = lineNoSpaces.substring(m2jvLoc, m2jvLoc + ticketOffset);
+						m2jvTicketNum = m2jvTicketNum.substring(0, 4) + "-" + m2jvTicketNum.substring(4, m2jvTicketNum.length);
+						tempLine = tempLine.substring(0, m2jvLoc) + tempLine.substring(m2jvLoc + ticketOffset + 1, tempLine.length);
+						tempLine = tempLine.replace(":", "");
+						tempLine = tempLine.replace("-", "");
+						tempLine = tempLine.trim();
+						tempLine = m2jvTicketNum + ": " + tempLine;
+						var realStart = 0;
+						for (var j = 0; j < tempLine.length; j++) {
+							if (!tempLine[j].match(/[a-zA-Z]/)) {
+								realStart = j+1;
+							} else {
+								break;
+							}
+						}
+						tempLine = tempLine.substring(realStart, tempLine.length);
+					}
+					var authorLoc = tempLine.indexOf("git4idea.commit.signature");
+					var authorName = tempLine.substring(authorLoc+66, tempLine.length);
+					authorName = authorName.replace("YELLOWCORPNT\\", "");
+					tempLine = authorName + " - " + tempLine.substring(0, authorLoc-1);
+					if (mmpiTicketNum.length > 0 && !arrTicketNums.includes(mmpiTicketNum)) {
+						arrTicketNums.push(mmpiTicketNum);
+						arrCommits.push(tempLine);
+					} else if (m2jvTicketNum.length > 0 && !arrTicketNums.includes(m2jvTicketNum)) {
+						arrTicketNums.push(m2jvTicketNum);
+						arrCommits.push(tempLine);
+					} else if (mmpiTicketNum.length == 0 && m2jvTicketNum.length == 0) {
+						arrNoTicket.push(tempLine)
 					}
 				}
 			}
-			if (tempLine.length != 0 && tempLine !== "Changes" && swInSelectedBranch && anyBuild < 0) {
-				arrFileLines.push(tempLine);
-			}
-		}
-		arrFileLines = cleanupLines(arrFileLines);
-		if (arrFileLines.length != 0) {
-			if (!swCheckNewTicketsAffectProd) {
-				var devbSpacing5 = "";
-				var devbSpacing6 = "<br>";
-				if (!swAddTicketsToNewList) {
-					devbSpacing5 = "<br><br>";
-					devbSpacing6 = "";
-					var firstHeading = arrExistingHeadings[0];
-					var firstHeadingFirstHalf = firstHeading.indexOf("...") + 3;
-					firstHeading = firstHeading.substring(0, firstHeadingFirstHalf) + addTicketsNewBuild + " )";
-					arrExistingHeadings[0] = firstHeading;
+			arrCommits.sort();
+			if (arrNoTicket.length > 0) {
+				arrNoTicket.sort();
+				arrCommits.push("");
+				arrCommits.push("");
+				arrCommits.push("Commits without ticket number:");
+				arrCommits.push("");
+				for (var i = 0; i < arrNoTicket.length; i++) {
+					arrCommits.push(arrNoTicket[i]);
 				}
-				document.getElementById("optionLabel").innerHTML = "New tickets have been formatted and added to the end of the list.";
-				document.getElementById("outputText").innerHTML = arrExistingHeadings.join('<br>') + newListBuilder.split('\n').join('<br>') + devbSpacing5 + "**Production**<br>" + devbSpacing6 +
-					arrExistingFoundProd.join('<br>') + devbSpacing5 + "**DevB**<br>" + arrExistingDevbTickets.join('<br>') + "<br><br><br>";
-				if (!swAddTicketsToNewList) {
-					document.getElementById("outputText").innerHTML += "<br>";
-				}
-				document.getElementById("outputText").innerHTML += arrFileLines.join('<br>');
 			}
 		} else {
-			document.getElementById("outputText").style.textAlign = "center";
-			document.getElementById("outputText").innerHTML = "No changes were found to be formatted.<br><br><br><br>Make sure that you are copying the build headings along with their respective changes.";
+			document.getElementById("outputText").innerHTML = "You haven't entered anything in the text box! Try again.";
 		}
+		var displayMessage = "All,<br><br>The branch for MCC ENV is being re-created off of develop to match Prod.<br>This means that any changes in this environment which have not been merged into develop will be removed.<br>All of the tickets/changes listed below are currently in this situation.<br><br>If any of the changes below belong to you, there are two options:<br>1 - After the environment branch is re-created, open another merge request of your feature branch into that branch.<br>2 - Open a merge request now of your branch into develop, assuming it has either passed testing or is not changing an active Prod program.<br><br><br>";
+		document.getElementById("outputText").innerHTML = displayMessage + "Tickets:<br><br>" + arrCommits.join('<br>');
 	} else {
-		document.getElementById("outputText").innerHTML = "You haven't entered anything in the text box! Try again.";
-	}
-	if (swAddTicketsToNewList && !swCheckNewTicketsAffectProd) {
-		swAddTicketsToNewList = false;
-		newListBuilder += "**Production**\n\n**DevB**\n\n\n\n" + arrFileLines.join('\n');
-		downloadList();
-	} else if (swCheckNewTicketsAffectProd) {
-		arrFormattedJenkinsTickets.push("");
-		for (var i = 0; i < arrFileLines.length; i++) {
-			arrFormattedJenkinsTickets.push(arrFileLines[i]);
+		if (document.getElementById("alsoAffectsProd").checked == true) {
+			swCheckNewTicketsAffectProd = true;
 		}
-		affectsProd();
+	
+		var arrFileLines = new Array();
+		var lines = document.getElementById("JenkinsText").value.split(/\r\n|\n/);
+		var allText = document.getElementById("JenkinsText").value;
+		addTicketsNewBuild = "";
+	
+		var selectedBranch = document.getElementById("JenkinsBranchOption").value;
+		document.getElementById('JenkinsBranchOption').value="release/PreProduction";
+	
+		if (allText.length != 0) {
+			for (var i = 0; i < lines.length; i++) {
+				var tempLine = lines[i];
+				var selectedBranchLoc = tempLine.indexOf("- Branch [" + selectedBranch + "]");
+				var anyBuild = tempLine.indexOf("- Branch [");
+				if (anyBuild > -1) {
+					var swInSelectedBranch = false;
+					if (selectedBranchLoc > -1) {
+						swInSelectedBranch = true;
+						if (addTicketsNewBuild.length == 0) {
+							addTicketsNewBuild = tempLine.substring(tempLine.indexOf("#")+1, selectedBranchLoc-1);
+						}
+					}
+				}
+				if (tempLine.length != 0 && tempLine !== "Changes" && swInSelectedBranch && anyBuild < 0) {
+					arrFileLines.push(tempLine);
+				}
+			}
+			arrFileLines = cleanupLines(arrFileLines);
+			if (arrFileLines.length != 0) {
+				if (!swCheckNewTicketsAffectProd) {
+					var devbSpacing5 = "";
+					var devbSpacing6 = "<br>";
+					if (!swAddTicketsToNewList) {
+						devbSpacing5 = "<br><br>";
+						devbSpacing6 = "";
+						var firstHeading = arrExistingHeadings[0];
+						var firstHeadingFirstHalf = firstHeading.indexOf("...") + 3;
+						firstHeading = firstHeading.substring(0, firstHeadingFirstHalf) + addTicketsNewBuild + " )";
+						arrExistingHeadings[0] = firstHeading;
+					}
+					document.getElementById("optionLabel").innerHTML = "New tickets have been formatted and added to the end of the list.";
+					document.getElementById("outputText").innerHTML = arrExistingHeadings.join('<br>') + newListBuilder.split('\n').join('<br>') + devbSpacing5 + "**Production**<br>" + devbSpacing6 +
+						arrExistingFoundProd.join('<br>') + devbSpacing5 + "**DevB**<br>" + arrExistingDevbTickets.join('<br>') + "<br><br><br>";
+					if (!swAddTicketsToNewList) {
+						document.getElementById("outputText").innerHTML += "<br>";
+					}
+					document.getElementById("outputText").innerHTML += arrFileLines.join('<br>');
+				}
+			} else {
+				document.getElementById("outputText").style.textAlign = "center";
+				document.getElementById("outputText").innerHTML = "No changes were found to be formatted.<br><br><br><br>Make sure that you are copying the build headings along with their respective changes.";
+			}
+		} else {
+			document.getElementById("outputText").innerHTML = "You haven't entered anything in the text box! Try again.";
+		}
+		if (swAddTicketsToNewList && !swCheckNewTicketsAffectProd) {
+			swAddTicketsToNewList = false;
+			newListBuilder += "**Production**\n\n**DevB**\n\n\n\n" + arrFileLines.join('\n');
+			downloadList();
+		} else if (swCheckNewTicketsAffectProd) {
+			arrFormattedJenkinsTickets.push("");
+			for (var i = 0; i < arrFileLines.length; i++) {
+				arrFormattedJenkinsTickets.push(arrFileLines[i]);
+			}
+			affectsProd();
+		}
 	}
 }
 
@@ -1498,6 +1589,16 @@ function email() {
 		reader.onerror = (e) => alert(e.target.error.name); 
 		reader.readAsText(file); 
 	}
+}
+
+// Find Changes in Test Environment
+function devbCommits() {
+	resetScreen();
+	document.getElementById("optionLabel").innerHTML = "Find Changes in Test Environment";
+	document.getElementById("JenkinsButton").style.display="inline-block";
+	document.getElementById("JenkinsText").focus();
+	showClass("JenkinsAll");
+	swFormatDevbCommits = true;
 }
 
 // remove event listeners for input file
