@@ -20,7 +20,7 @@ var swError404 = false;
 var swFoundDupTicket = false;
 var swFoundProdSection = false;
 var swFoundswFoundProd = false;
-var swFormatDevbCommits = false;
+var swFormatNonProdCommits = false;
 var swMarkBlockersAfterAffectsProd = false;
 
 // array variables
@@ -29,7 +29,7 @@ var arrBlockerNamesAndTickets;
 var arrCheckAffectsFoundProd;
 var arrCheckFoundProd;
 var arrCheckProdNoTicket;
-var arrExistingDevbTickets;
+var arrExistingNonProdTickets;
 var arrExistingHeadings;
 var arrExistingFoundProd;
 var arrFormattedJenkinsTickets;
@@ -192,7 +192,7 @@ function submitNewList() {
 		swAddTicketsToNewList = true;
 		jenkins();
 	} else {
-		newListBuilder += "**Production**\n\n**DevB**\n\n\n\n";
+		newListBuilder += "**Production**\n\n**Non-Prod Impacting**\n\n\n\n";
 		document.getElementById("outputText").innerHTML = newListBuilder.split('\n').join('<br>');
 		downloadList();
 	}
@@ -240,7 +240,7 @@ function jenkins() {
 					var tempLine = lines[i];
 					if (tempLine.startsWith("**Production**")) {
 						swFoundProd = true;
-					} else if (tempLine.startsWith("**DevB**")) {
+					} else if (tempLine.startsWith("**Non-Prod Impacting**")) {
 						swFoundProd = false;
 					}
 					if (i < 3) {
@@ -252,8 +252,8 @@ function jenkins() {
 						if (formattedTicket !== "none") {
 							arrAllJenkinsTickets.push(formattedTicket);
 						}
-					} else if (!swFoundProd && tempLine.indexOf("*") > -1 && !tempLine.startsWith("**DevB**") && i >= 3) {
-						arrExistingDevbTickets.push(tempLine);
+					} else if (!swFoundProd && tempLine.indexOf("*") > -1 && !tempLine.startsWith("**Non-Prod Impacting**") && i >= 3) {
+						arrExistingNonProdTickets.push(tempLine);
 						var formattedTicket = getTicketTitle(tempLine);
 						if (formattedTicket !== "none") {
 							arrAllJenkinsTickets.push(formattedTicket);
@@ -271,7 +271,7 @@ function jenkins() {
 				document.getElementById("alsoAffectsProdLabel").style.display="inline-block";
 				showClass("JenkinsAll");
 				showClassInline("JenkinsBranchAll");
-				swFormatDevbCommits = false;
+				swFormatNonProdCommits = false;
 				removeListeners();
 			};
 			reader.onerror = (e) => alert(e.target.error.name); 
@@ -287,7 +287,7 @@ function jenkins() {
 		document.getElementById("alsoAffectsProdLabel").style.display="inline-block";
 		showClass("JenkinsAll");
 		showClassInline("JenkinsBranchAll");
-		swFormatDevbCommits = false;
+		swFormatNonProdCommits = false;
 	}
 }
 
@@ -295,7 +295,7 @@ function jenkins() {
 function resetTicketArrays() {
 	arrExistingHeadings = new Array();
 	arrExistingFoundProd = new Array();
-	arrExistingDevbTickets = new Array();
+	arrExistingNonProdTickets = new Array();
 	arrAllJenkinsTickets = new Array();
 }
 
@@ -320,7 +320,7 @@ function toJenkinsChanges() {
 
 // goes to Gitlab to search for old builds when button is clicked
 function toOldBuild() {
-	navigate('http://gitlab.yrcw.com/mcc/environment/mcc-environment-prod/merge_requests?scope=all&search=devb&sort=updated_desc&state=merged', true);
+	navigate('http://gitlab.yrcw.com/mcc/environment/mcc-environment-prod/merge_requests?scope=all&utf8=%E2%9C%93&state=merged%27&search=deploy', true);
 	document.getElementById("JenkinsText").focus();
 }
 
@@ -344,7 +344,7 @@ function jenkinsFormat() {
 	document.getElementById("alsoAffectsProd").style.display="none";
 	document.getElementById("alsoAffectsProdLabel").style.display="none";
 	
-	if (swFormatDevbCommits) {
+	if (swFormatNonProdCommits) {
 		var arrCommits = new Array();
 		var arrTicketNums = new Array();
 		var arrNoTicket = new Array();
@@ -464,19 +464,19 @@ function jenkinsFormat() {
 			arrFileLines = cleanupLines(arrFileLines);
 			if (arrFileLines.length != 0) {
 				if (!swCheckNewTicketsAffectProd) {
-					var devbSpacing5 = "";
-					var devbSpacing6 = "<br>";
+					var nonProdSpacing5 = "";
+					var nonProdSpacing6 = "<br>";
 					if (!swAddTicketsToNewList) {
-						devbSpacing5 = "<br><br>";
-						devbSpacing6 = "";
+						nonProdSpacing5 = "<br><br>";
+						nonProdSpacing6 = "";
 						var firstHeading = arrExistingHeadings[0];
 						var firstHeadingFirstHalf = firstHeading.indexOf("...") + 3;
 						firstHeading = firstHeading.substring(0, firstHeadingFirstHalf) + addTicketsNewBuild + " )";
 						arrExistingHeadings[0] = firstHeading;
 					}
 					document.getElementById("optionLabel").innerHTML = "New tickets have been formatted and added to the end of the list.";
-					document.getElementById("outputText").innerHTML = arrExistingHeadings.join('<br>') + newListBuilder.split('\n').join('<br>') + devbSpacing5 + "**Production**<br>" + devbSpacing6 +
-						arrExistingFoundProd.join('<br>') + devbSpacing5 + "**DevB**<br>" + arrExistingDevbTickets.join('<br>') + "<br><br><br>";
+					document.getElementById("outputText").innerHTML = arrExistingHeadings.join('<br>') + newListBuilder.split('\n').join('<br>') + nonProdSpacing5 + "**Production**<br>" + nonProdSpacing6 +
+						arrExistingFoundProd.join('<br>') + nonProdSpacing5 + "**Non-Prod Impacting**<br>" + arrExistingNonProdTickets.join('<br>') + "<br><br><br>";
 					if (!swAddTicketsToNewList) {
 						document.getElementById("outputText").innerHTML += "<br>";
 					}
@@ -491,7 +491,7 @@ function jenkinsFormat() {
 		}
 		if (swAddTicketsToNewList && !swCheckNewTicketsAffectProd) {
 			swAddTicketsToNewList = false;
-			newListBuilder += "**Production**\n\n**DevB**\n\n\n\n" + arrFileLines.join('\n');
+			newListBuilder += "**Production**\n\n**Non-Prod Impacting**\n\n\n\n" + arrFileLines.join('\n');
 			downloadList();
 		} else if (swCheckNewTicketsAffectProd) {
 			arrFormattedJenkinsTickets.push("");
@@ -641,17 +641,17 @@ async function processLines() {
 	arrCheckFoundProd = new Array();
 	arrCheckProdNoTicket = new Array();
 	arrMergeReqLinks = new Array();
-	var swDevbTickets = false;
+	var swNonProdTickets = false;
 	var blanks = 0;
 	arrExistingHeadings = new Array();
 	arrExistingFoundProd = new Array();
-	arrExistingDevbTickets = new Array();
+	arrExistingNonProdTickets = new Array();
 	var swFoundProd = false;
 	for (var i = 0; i < arrCheckAffectsFoundProd.length; i++) {
 		var tempLine = arrCheckAffectsFoundProd[i];
 		if (tempLine.startsWith("**Production**")) {
 			swFoundProd = true;
-		} else if (tempLine.startsWith("**DevB**")) {
+		} else if (tempLine.startsWith("**Non-Prod Impacting**")) {
 			swFoundProd = false;
 		}
 		if (i < 3) {
@@ -667,13 +667,13 @@ async function processLines() {
 		}
 		if (swFoundProd && tempLine.indexOf("*") > -1 && !tempLine.startsWith("**Production**")) {
 			arrExistingFoundProd.push(tempLine);
-		} else if (!swFoundProd && tempLine.indexOf("*") > -1 && !tempLine.startsWith("**DevB**") && i >= 3 && blanks == 0) {
-			arrExistingDevbTickets.push(tempLine);
+		} else if (!swFoundProd && tempLine.indexOf("*") > -1 && !tempLine.startsWith("**Non-Prod Impacting**") && i >= 3 && blanks == 0) {
+			arrExistingNonProdTickets.push(tempLine);
 		}
-		if (tempLine.startsWith("**DevB**")) {
-			swDevbTickets = true;
+		if (tempLine.startsWith("**Non-Prod Impacting**")) {
+			swNonProdTickets = true;
 		}
-		if (swDevbTickets || swAddTicketsToNewList) {
+		if (swNonProdTickets || swAddTicketsToNewList) {
 			if (tempLine.length == 0) {
 				blanks++;
 			}
@@ -849,7 +849,7 @@ async function submitAffectsProd() {
 	document.getElementById("myDynamicTable").style.display = "none";
 	document.getElementById("affectsProdBtn").style.display = "none";
 	if (!swCheckNewTicketsAffectProd && !document.getElementById("alsoMarkBlockers").checked) {
-		document.getElementById("optionLabel").innerHTML = "The new tickets on the list have been formatted and sorted as either Production or DevB.";
+		document.getElementById("optionLabel").innerHTML = "The new tickets on the list have been formatted and sorted as either Production or non-prod impacting.";
 	} else {
 		document.getElementById("optionLabel").innerHTML = "Mark All Prod Blockers";
 	}
@@ -871,7 +871,7 @@ async function submitAffectsProd() {
 			arrListToDownload.push(arrCheckedAsProd[i]);
 		}
 		arrListToDownload.push("");
-		arrListToDownload.push("**DevB**");
+		arrListToDownload.push("**Non-Prod Impacting**");
 		for (var i = 0; i < arrNotCheckedAsProd.length; i++) {
 			arrListToDownload.push(arrNotCheckedAsProd[i]);
 		}
@@ -885,7 +885,7 @@ async function submitAffectsProd() {
 			arrListToDownload.push(arrCheckedAsProd[i]);
 		}
 		arrListToDownload.push("");
-		arrListToDownload.push("**DevB**");
+		arrListToDownload.push("**Non-Prod Impacting**");
 		for (var i = 0; i < arrNotCheckedAsProd.length; i++) {
 			arrListToDownload.push(arrNotCheckedAsProd[i]);
 		}
@@ -921,22 +921,22 @@ async function submitAffectsProd() {
 				newListBuilder += '\n' + arrTicketsMarkedBlockers[i];
 			}
 		}
-		newListBuilder += "\n**DevB**\n";
+		newListBuilder += "\n**Non-Prod Impacting**\n";
 		newListBuilder += arrNotCheckedAsProd.join('\n');
 		if (arrCheckProdNoTicket.length > 0) {
-			var devbSpacing4 = "";
+			var nonProdSpacing4 = "";
 			if (arrNotCheckedAsProd.length > 0) {
-				devbSpacing4 = "\n\n\n\n";
+				nonProdSpacing4 = "\n\n\n\n";
 			} else {
-				devbSpacing4 = "\n\n\n";
+				nonProdSpacing4 = "\n\n\n";
 			}
-			newListBuilder += devbSpacing4 + arrCheckProdNoTicket.join('\n');
+			newListBuilder += nonProdSpacing4 + arrCheckProdNoTicket.join('\n');
 		}
 		downloadList();
 	}
 }
 
-// display list with tickets in production or devb section
+// display list with tickets in production or nonProd section
 function markProdMessages() {
 	if (JiraTicketResponse === "error") {
 		document.getElementById("optionLabel").innerHTML = "Error";
@@ -945,39 +945,39 @@ function markProdMessages() {
 			"If this issue persists, send feedback to report a bug with this functionality.";
 	} else {
 		if (swCheckProd && !swAddTicketsFromJenkins) {
-			var devbSpacing = "";
+			var nonProdSpacing = "";
 			if (arrNotCheckedAsProd.length > 0) {
-				devbSpacing = "<br>";
+				nonProdSpacing = "<br>";
 			}
-			document.getElementById("optionLabel").innerHTML = "Tickets have been sorted as either Production or DevB and added to the appropriate group.";
+			document.getElementById("optionLabel").innerHTML = "Tickets have been sorted as either Production or non-prod impacting and added to the appropriate group.";
 			if (swMarkBlockersAfterAffectsProd) {
 				document.getElementById("optionLabel").innerHTML += "<br><br>Production tickets that have a status other than Done have been marked with an \"X\" and added to the ticket list.";
 			}
 			document.getElementById("outputText").innerHTML = arrExistingHeadings.join('<br>') + "<br><br>" + arrTicketsMarkedBlockers.join('<br/>') + arrExistingFoundProd.join('<br>') +
-				"<br><br>**DevB**" + devbSpacing + arrNotCheckedAsProd.join('<br>') + "<br>" + arrExistingDevbTickets.join('<br>');
+				"<br><br>**Non-Prod Impacting**" + nonProdSpacing + arrNotCheckedAsProd.join('<br>') + "<br>" + arrExistingNonProdTickets.join('<br>');
 			if (arrCheckProdNoTicket.length > 0) {
 				document.getElementById("outputText").innerHTML += "<br><br><br><br>" + arrCheckProdNoTicket.join('<br/>');
 			}
 		} else if (swCheckProd && swAddTicketsFromJenkins) {
-			var devbSpacing = "<br>";
-			var devbSpacing2 = "<br>";
-			var devbSpacing3 = "";
+			var nonProdSpacing = "<br>";
+			var nonProdSpacing2 = "<br>";
+			var nonProdSpacing3 = "";
 			if (!swAddTicketsToNewList) {
-				devbSpacing += "<br>";
+				nonProdSpacing += "<br>";
 				if (arrNotCheckedAsProd.length == 0) {
-					devbSpacing2 = "";
+					nonProdSpacing2 = "";
 				}
 			}
 			if (arrNotCheckedAsProd.length > 0) {
-				devbSpacing3 = "<br><br><br>";
+				nonProdSpacing3 = "<br><br><br>";
 			} else {
-				devbSpacing3 = "<br><br>";
+				nonProdSpacing3 = "<br><br>";
 			}
-			document.getElementById("optionLabel").innerHTML = "Tickets have been sorted as either Production or DevB and added to the appropriate group.";
+			document.getElementById("optionLabel").innerHTML = "Tickets have been sorted as either Production or non-prod impacting and added to the appropriate group.";
 			document.getElementById("outputText").innerHTML = arrExistingHeadings.join('<br>') + "<br><br>" + arrTicketsMarkedBlockers.join('<br/>') + arrExistingFoundProd.join('<br>') +
-				devbSpacing + "**DevB**" + devbSpacing2 + arrNotCheckedAsProd.join('<br>') + "<br>" + arrExistingDevbTickets.join('<br>');
+				nonProdSpacing + "**Non-Prod Impacting**" + nonProdSpacing2 + arrNotCheckedAsProd.join('<br>') + "<br>" + arrExistingNonProdTickets.join('<br>');
 			if (arrCheckProdNoTicket.length > 0) {
-				document.getElementById("outputText").innerHTML += devbSpacing3;
+				document.getElementById("outputText").innerHTML += nonProdSpacing3;
 				if (!swAddTicketsToNewList) {
 					if (arrNotCheckedAsProd.length > 0) {
 						document.getElementById("outputText").innerHTML += "<br>";
@@ -1033,7 +1033,7 @@ function markBlockers() {
 async function lookForProd(tempLine) {
 	if (tempLine.startsWith("**Production**")) {
 		swFoundProdSection = true;
-	} else if (tempLine.startsWith("**DevB**")) {
+	} else if (tempLine.startsWith("**Non-Prod Impacting**")) {
 		swFoundProdSection = false;
 	}
 	if (swFoundProdSection) {
@@ -1179,7 +1179,7 @@ function checkBlockers() {
 				var tempLine = lines[i];
 				if (tempLine.startsWith("**Production**")) {
 					swFoundProd = true;
-				} else if (tempLine.startsWith("**DevB**")) {
+				} else if (tempLine.startsWith("**Non-Prod Impacting**")) {
 					swFoundProd = false;
 				}
 				if (swFoundProd) {
@@ -1363,7 +1363,7 @@ function addProdLabel() {
 function markLabel(tempLine, checkIfProd) {
 	if (tempLine.startsWith("**Production**")) {
 		swFoundProdSection = true;
-	} else if (tempLine.startsWith("**DevB**")) {
+	} else if (tempLine.startsWith("**Non-Prod Impacting**")) {
 		swFoundProdSection = false;
 	}
 	
@@ -1476,9 +1476,9 @@ function changeTask() {
 				if (!tempLine.startsWith("* [Previous") && !tempLine.startsWith("* [CHG") && !tempLine.startsWith("* [Merge") && !tempLine.length == 0) {
 					if (tempLine.startsWith("**Production**")) {
 						arrFileLines.push("Production");
-					} else if (tempLine.startsWith("**DevB**")) {
+					} else if (tempLine.startsWith("**Non-Prod Impacting**")) {
 						arrFileLines.push("");
-						arrFileLines.push("DevB");
+						arrFileLines.push("Non-Prod Impacting");
 					} else {
 						var mmpiLoc = tempLine.toUpperCase().indexOf("MMPI");
 						var m2jvLoc = tempLine.toUpperCase().indexOf("M2JV");
@@ -1539,7 +1539,7 @@ function email() {
 			var nextDate = new Date();
 			var dayOfWeek = getDayOfWeek(nextDate.getDay() + getDayOffset());
 			arrFileLines.push("MCC Production will be updated " + dayOfWeek + " " + nextBusDay + " at approximately 7:15 AM CDT.");
-			arrFileLines.push("Tickets listed under the \"DevB\" heading do not have an impact to Production.");
+			arrFileLines.push("The batch containers will/will NOT be rolled as part of this deployment.");
 			arrFileLines.push("");
 			for (var i = 0; i < lines.length; i++) {
 				var tempLine = lines[i];
@@ -1560,9 +1560,9 @@ function email() {
 				} else {
 					var mmpiLoc = tempLine.toUpperCase().indexOf("MMPI");
 					var m2jvLoc = tempLine.toUpperCase().indexOf("M2JV");
-					if (tempLine.startsWith("**DevB**")) {
+					if (tempLine.startsWith("**Non-Prod Impacting**")) {
 						arrFileLines.push("");
-						arrFileLines.push("DevB");
+						arrFileLines.push("Non-Prod Impacting");
 					} else if (tempLine.startsWith("**Production**")) {
 						arrFileLines.push("");
 						arrFileLines.push("Production");
@@ -1592,13 +1592,13 @@ function email() {
 }
 
 // Find Changes in Test Environment
-function devbCommits() {
+function nonProdCommits() {
 	resetScreen();
 	document.getElementById("optionLabel").innerHTML = "Find Changes in Test Environment";
 	document.getElementById("JenkinsButton").style.display="inline-block";
 	document.getElementById("JenkinsText").focus();
 	showClass("JenkinsAll");
-	swFormatDevbCommits = true;
+	swFormatNonProdCommits = true;
 }
 
 // remove event listeners for input file
