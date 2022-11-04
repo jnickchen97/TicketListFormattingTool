@@ -88,7 +88,7 @@ function resetScreen() {
 	document.getElementById("myDynamicTable").style.display = "block";
 	document.getElementById("alsoMarkBlockers").style.display="none";
 	document.getElementById("alsoMarkBlockersLabel").style.display="none";
-	document.getElementById("alsoMarkBlockers").checked = true;
+	document.getElementById("alsoMarkBlockers").checked = false;
 	document.getElementById("alsoAffectsProd").style.display="none";
 	document.getElementById("alsoAffectsProdLabel").style.display="none";
 	document.getElementById("alsoAffectsProd").checked = true;
@@ -1578,9 +1578,9 @@ function email() {
 				}
 			}
 			document.getElementById("outputText").innerHTML = arrFileLines.join('<br/>');
-			document.getElementById("oopEmail").style.display="inline-block";
-			document.getElementById("oopEmailLabel").style.display="inline-block";
-			document.getElementById("oopEmailLabel").style.paddingTop="30px";
+			//document.getElementById("oopEmail").style.display="inline-block";
+			//document.getElementById("oopEmailLabel").style.display="inline-block";
+			//document.getElementById("oopEmailLabel").style.paddingTop="30px";
 			document.getElementById("emailButton").style.display="block";
 			document.getElementById("fileInput").style.display="none";
 			document.getElementById("fileInputLabel").style.display="none";
