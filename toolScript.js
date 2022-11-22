@@ -355,7 +355,7 @@ function jenkinsFormat() {
 				var mmpiTicketNum = "";
 				var m2jvTicketNum = "";
 				var tempLine = lines[i];
-				if (tempLine.indexOf("Merge branch") < 0 && tempLine.indexOf("Merge remote-tracking branch") < 0) {
+				if (tempLine.indexOf("Merge branch") < 0 && tempLine.indexOf("Merge remote-tracking branch") < 0 && tempLine.indexOf("Merge commit") < 0) {
 					var lineNoSpaces = tempLine.replace(/[ -]/g, "");
 					var notNum = isNaN(lineNoSpaces.charAt(8));
 					var ticketOffset = 8;
