@@ -91,7 +91,7 @@ function resetScreen() {
 	document.getElementById("alsoMarkBlockers").checked = false;
 	document.getElementById("alsoAffectsProd").style.display="none";
 	document.getElementById("alsoAffectsProdLabel").style.display="none";
-	document.getElementById("alsoAffectsProd").checked = true;
+	document.getElementById("alsoAffectsProd").checked = false;
 	document.getElementById("affectsProdBtn").style.display = "none";
 	hideClass("newListSpacing");
 	document.getElementById("validationEmailButton").style.display="none";
