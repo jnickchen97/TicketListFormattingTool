@@ -46,7 +46,7 @@ function resetScreen() {
 	var changeUrl;
 	document.getElementById("welcomeLabel").style.display="none";
 	hideClass("JenkinsAll");
-	hideClass("JenkinsBranchAllAll");
+	hideClass("JenkinsBranchAll");
 	document.getElementById("JenkinsButton").style.display="none";
 	document.getElementById("JenkinsLink").style.display="none";
 	document.getElementById("JenkinsOldBuild").style.display="none";
@@ -441,7 +441,7 @@ function jenkinsFormat() {
 		addTicketsNewBuild = "";
 	
 		var selectedBranch = document.getElementById("JenkinsBranchOption").value;
-		document.getElementById('JenkinsBranchOption').value="release/PreProduction";
+		document.getElementById('JenkinsBranchOption').value="develop";
 	
 		if (allText.length != 0) {
 			for (var i = 0; i < lines.length; i++) {
