@@ -91,7 +91,7 @@ function resetScreen() {
 	document.getElementById("alsoMarkBlockers").checked = false;
 	document.getElementById("alsoAffectsProd").style.display="none";
 	document.getElementById("alsoAffectsProdLabel").style.display="none";
-	document.getElementById("alsoAffectsProd").checked = false;
+	document.getElementById("alsoAffectsProd").checked = true;
 	document.getElementById("affectsProdBtn").style.display = "none";
 	hideClass("newListSpacing");
 	document.getElementById("validationEmailButton").style.display="none";
@@ -1134,7 +1134,7 @@ async function getTicketStatus(tempTicketUrl) {
 	var ticketUrlLoc = tempTicketUrl.indexOf("browse/") + 7;
 	var ticketNum = tempTicketUrl.substring(ticketUrlLoc, tempTicketUrl.length);
 	var ticketUrl = "https://yrcfreight.atlassian.net/rest/api/2/issue/" + ticketNum;
-	var wholeUrl = "https://jesse-cors-proxy.herokuapp.com/" + ticketUrl;
+	var wholeUrl = "https://cors-anywhere-proxy-oq7n.onrender.com/" + ticketUrl;
 	const response = await fetch(wholeUrl, requestOptions)
 		.then(async function(response) {
 			if(response.status!==200) {
