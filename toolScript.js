@@ -347,6 +347,7 @@ function jenkinsFormat() {
 	if (swFormatNonProdCommits) {
 		var arrCommits = new Array();
 		var arrTicketNums = new Array();
+		var arrNoHash = new Array();
 		var arrNoTicket = new Array();
 		var lines = document.getElementById("JenkinsText").value.split(/\r\n|\n/);
 		var allText = document.getElementById("JenkinsText").value;
@@ -399,11 +400,22 @@ function jenkinsFormat() {
 						}
 						tempLine = tempLine.substring(realStart, tempLine.length);
 					}
-					var authorLoc = tempLine.indexOf("git4idea.commit.signature");
-					var authorName = tempLine.substring(authorLoc+66, tempLine.length);
+					var sections = tempLine.split(" ");
+					var hash = "";
+					for (var k = sections.length - 1; k >= 0; k--) {
+						var match = sections[k].match(/^(?=.*\d)[a-z\d]{8}$/);
+						if (match != null) {
+							hash = sections[k];
+							break;
+						}
+					}
+					var hashLoc = tempLine.indexOf(hash);
+					var authorName = tempLine.substring(hashLoc+8, tempLine.length);
 					authorName = authorName.replace("YELLOWCORPNT\\", "");
-					tempLine = authorName + " - " + tempLine.substring(0, authorLoc-1);
-					if (mmpiTicketNum.length > 0 && !arrTicketNums.includes(mmpiTicketNum)) {
+					tempLine = authorName + " - " + tempLine.substring(0, hashLoc-1);
+					if (hash == "") {
+						arrNoHash.push(tempLine);
+					} else if (mmpiTicketNum.length > 0 && !arrTicketNums.includes(mmpiTicketNum)) {
 						arrTicketNums.push(mmpiTicketNum);
 						arrCommits.push(tempLine);
 					} else if (m2jvTicketNum.length > 0 && !arrTicketNums.includes(m2jvTicketNum)) {
@@ -419,10 +431,19 @@ function jenkinsFormat() {
 				arrNoTicket.sort();
 				arrCommits.push("");
 				arrCommits.push("");
-				arrCommits.push("Commits without ticket number:");
+				arrCommits.push("Commits without valid ticket number:");
 				arrCommits.push("");
 				for (var i = 0; i < arrNoTicket.length; i++) {
 					arrCommits.push(arrNoTicket[i]);
+				}
+			}
+			if (arrNoHash.length > 0) {
+				arrCommits.push("");
+				arrCommits.push("");
+				arrCommits.push("Commits that couldn't be formatted correctly:");
+				arrCommits.push("");
+				for (var i = 0; i < arrNoHash.length; i++) {
+					arrCommits.push(arrNoHash[i]);
 				}
 			}
 		} else {
