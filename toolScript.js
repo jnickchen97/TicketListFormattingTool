@@ -1559,8 +1559,8 @@ function email() {
 			var nextBusDay = getNextBusDay();
 			var nextDate = new Date();
 			var dayOfWeek = getDayOfWeek(nextDate.getDay() + getDayOffset());
-			arrFileLines.push("MCC Production will be updated " + dayOfWeek + " " + nextBusDay + " at approximately 7:15 AM central time.");
-			arrFileLines.push("The batch containers will/will NOT be rolled as part of this deployment.");
+			arrFileLines.push("MCC Production will be updated " + dayOfWeek + " " + nextBusDay + " at approximately 4:25 AM central time.");
+			arrFileLines.push("The batch containers will be rolled as part of this deployment.");
 			arrFileLines.push("");
 			for (var i = 0; i < lines.length; i++) {
 				var tempLine = lines[i];
