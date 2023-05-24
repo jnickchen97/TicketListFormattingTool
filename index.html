@@ -26,6 +26,7 @@
 						<button onclick="changeTask();" class="btnWidth">Format List for Change Task</button>
 						<button onclick="merge();" class="btnWidth">Format List for Merge Request</button>
 						<button onclick="email();" class="btnWidth">Format List for Email</button>
+						<button onclick="emailResponse();" class="btnWidth">Generate Email Response</button>
 						<button onclick="nonProdCommits();" class="btnWidth">Find Changes in Test Environment</button>
 					</div>
 				</div>
@@ -35,7 +36,7 @@
 		</ul>
 		<div id="myNav" class="overlay">
 			<table class="menu-content" id="menuInfo">
-					<th>Current version: 3.5.2</th>
+					<th>Current version: 3.5.3</th>
 					<th style="font-size:20px" colspan="6">Here's what each option does:</th>
 				</tr>
 				<tr>
@@ -158,7 +159,7 @@
 			<label class="newListSpacing"></label><label for="alsoGetTickets" id="alsoGetTicketsLabel" class="newList">Check this box to also add tickets to the list: </label>
 			<input type="checkbox" id="alsoGetTickets" name="alsoGetTickets" value="yes" class="newList">
 			<button id="newListBtn" onclick="submitNewList();" class="newList" style="display:none; margin-top:35px;">Submit</button>
-			<label id="loaderLabel" style="display:none;">Checking with Jira, please wait...</label><br><br></div>
+			<label id="loaderLabel" style="display:none;">Starting up the free proxy, now would be a great time to grab some coffee...</label><br><br></div>
 			<div id="loader" class="loader" style="display:none;"></div>
 			<button id="newMergeRequest" onclick="newMergeRequest();" style="display:none;">Open a new merge request</button>
 			<button id="goToMergeRequest" onclick="goToMergeRequest();" style="display:none;">Go to the merge request</button>

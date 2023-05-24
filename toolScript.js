@@ -1622,6 +1622,28 @@ function nonProdCommits() {
 	swFormatNonProdCommits = true;
 }
 
+// Generate Email Response
+function emailResponse() {
+	resetScreen();
+	document.getElementById("optionLabel").innerHTML = "Generate Email Response";
+	var arrFileLines = new Array();
+	arrFileLines.push("All,");
+	arrFileLines.push("");
+	arrFileLines.push("This deployment has completed successfully.");
+	arrFileLines.push("");
+	arrFileLines.push("The following test environments have also been updated with these changes:");
+	arrFileLines.push(bullet + " Dev1");
+	arrFileLines.push(bullet + " Dev2");
+	arrFileLines.push(bullet + " Dev3");
+	arrFileLines.push(bullet + " DevA");
+	arrFileLines.push(bullet + " DevB");
+	arrFileLines.push(bullet + " DevC");
+	arrFileLines.push(bullet + " Sit1");
+	arrFileLines.push(bullet + " QA");
+	arrFileLines.push(bullet + " Train");
+	document.getElementById("outputText").innerHTML = arrFileLines.join('<br/>');
+}
+
 // remove event listeners for input file
 function removeListeners() {
 	var old_element = document.getElementById("fileInput");
