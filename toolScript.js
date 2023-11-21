@@ -1654,7 +1654,7 @@ function removeListeners() {
 // opens new email template for deployment notification
 function sendEmail() {
 	var to = "MCCDEPLOYMENTNOTIFICATIONS@myyellow.com";
-	var cc = "Annlea.Rumfola@myyellow.com;Angela.Middleton@myyellow.com;Doug.Deppen@myYellow.com;Kelly.Parish@myYellow.com;theresa.bashore@myYellow.com;Dave.Emerson@myYellow.com;Jeff.Brown@myYellow.com;James.Gibson@myYellow.com;Theresa.Anderson@myYellow.com;Shawn.Crawford@myYellow.com;Silvio.Gomes@myyellow.com;Mindi.Salas@myYellow.com;Jennifer.Shobe@myYellow.com;Cris.Moorshead@myYellow.com;IT_Team_Bashore@YRCFreight.com";
+	var cc = "Angela.Middleton@myyellow.com;Doug.Deppen@myYellow.com;Kelly.Parish@myYellow.com;Dave.Emerson@myYellow.com;Jeff.Brown@myYellow.com;Silvio.Gomes@myyellow.com;Mindi.Salas@myYellow.com;Cris.Moorshead@myYellow.com;IT_Team_Bashore@YRCFreight.com";
 	var subject = "MCC Production Deployment";
 	if (document.getElementById("oopEmail").checked == true) {
 		to += ";Gavin.Clyma@myYellow.com;Doug.Deppen@myYellow.com;Joanna.Rench@myYellow.com;Rob.Pendergast@myYellow.com;Tony.Thompson@myYellow.com;Derrin.Holloway@myYellow.com;theresa.bashore@myYellow.com";
